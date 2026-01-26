@@ -1,6 +1,8 @@
 # Railway Configuration for Go Backend
-# IMPORTANT: Set root directory to "apps/backend" in Railway service settings
-# This prevents Railway from detecting the root package.json and running "pnpm run build"
+# IMPORTANT: In Railway Dashboard:
+# 1. Settings → Source → Root Directory: Set to "apps/backend"
+# 2. Settings → Build → Builder: Change from "Railpack" to "Dockerfile"
+# This prevents Railway from detecting Node.js and using Railpack
 
 # Use Dockerfile for build (most reliable way to ensure Go build)
 [build]
