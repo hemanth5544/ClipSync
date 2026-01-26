@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.gitignore
+*.md
+.env
+.env.local
+electron
+electron-builder.yml
+dist
+out
+*.log
