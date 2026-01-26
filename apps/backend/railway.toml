@@ -2,13 +2,12 @@
 # IMPORTANT: Set root directory to "apps/backend" in Railway service settings
 # This prevents Railway from detecting the root package.json and running "pnpm run build"
 
+# Use Dockerfile for build (most reliable way to ensure Go build)
 [build]
-builder = "NIXPACKS"
-buildCommand = "go build -o bin/server ./cmd/server"
-watchPatterns = ["**/*.go"]
-ignorePatterns = ["node_modules/**", "**/package.json", "**/package-lock.json", "**/pnpm-lock.yaml"]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "./bin/server"
+startCommand = "./server"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
