@@ -14,6 +14,7 @@ type Clip struct {
 	ContentPreview string   `gorm:"type:varchar(200)" json:"contentPreview"`
 	CopiedAt      time.Time `gorm:"not null" json:"copiedAt"`
 	IsFavorite    bool      `gorm:"default:false" json:"isFavorite"`
+	IsPinned      bool      `gorm:"default:false;index" json:"isPinned"`
 	Tags          []string  `gorm:"type:text[]" json:"tags"`
 	DeviceName    *string   `json:"deviceName"`
 	Synced        bool      `gorm:"default:false" json:"synced"`

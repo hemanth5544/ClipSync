@@ -27,6 +27,7 @@ type CreateClipRequest struct {
 type UpdateClipRequest struct {
 	Content    *string   `json:"content"`
 	IsFavorite *bool     `json:"isFavorite"`
+	IsPinned   *bool     `json:"isPinned"`
 	Tags       *[]string `json:"tags"`
 }
 
@@ -49,13 +50,16 @@ func (h *ClipHandler) GetClips(c *gin.Context) {
 		query = query.Where("is_favorite = ?", true)
 	}
 
+	// Order by pinned first, then by copied_at desc
+	query = query.Order("is_pinned DESC, copied_at DESC")
+
 	var clips []models.Clip
 	var total int64
 
 	query.Model(&models.Clip{}).Count(&total)
 
 	offset := (parseInt(page) - 1) * parseInt(pageSize)
-	if err := query.Order("copied_at DESC").Offset(offset).Limit(parseInt(pageSize)).Find(&clips).Error; err != nil {
+	if err := query.Order("is_pinned DESC, copied_at DESC").Offset(offset).Limit(parseInt(pageSize)).Find(&clips).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch clips"})
 		return
 	}
@@ -148,6 +152,32 @@ func (h *ClipHandler) ToggleFavorite(c *gin.Context) {
 
 	if err := h.db.Save(&clip).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update clip"})
+		return
+	}
+
+	c.JSON(http.StatusOK, clip)
+}
+
+func (h *ClipHandler) TogglePin(c *gin.Context) {
+	userID, _ := c.Get("userId")
+	userIDStr := userID.(string)
+	clipID := c.Param("id")
+
+	var clip models.Clip
+	if err := h.db.Where("id = ? AND user_id = ?", clipID, userIDStr).First(&clip).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Clip not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find clip"})
+		return
+	}
+
+	clip.IsPinned = !clip.IsPinned
+	clip.UpdatedAt = time.Now()
+
+	if err := h.db.Save(&clip).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update pin"})
 		return
 	}
 
