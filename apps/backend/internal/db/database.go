@@ -54,6 +54,13 @@ func RunMigrations(db *gorm.DB) error {
 	}
 	log.Println("SyncSession table migrated successfully")
 	
+	log.Println("Migrating PairingCode table...")
+	if err := db.AutoMigrate(&models.PairingCode{}); err != nil {
+		log.Printf("Error migrating PairingCode: %v", err)
+		return err
+	}
+	log.Println("PairingCode table migrated successfully")
+	
 	log.Println("All migrations completed successfully!")
 	return nil
 }
