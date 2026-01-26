@@ -5,9 +5,18 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "clean": "turbo run clean && rm -rf node_modules",
+    
+    "backend:dev": "cd apps/backend && go run cmd/server/main.go",
+    "backend:build": "cd apps/backend && go build -o bin/server ./cmd/server",
+    "backend:start": "cd apps/backend && ./bin/server",
+    "backend:migrate": "cd apps/backend && go run cmd/server/main.go migrate",
+    "backend:build:railway": "cd apps/backend && go build -o bin/server ./cmd/server",
+    "backend:start:railway": "cd apps/backend && ./bin/server",
+    
     "db:migrate": "cd apps/backend && go run cmd/server/main.go migrate",
     "db:setup": "docker-compose up -d postgres"
   },
