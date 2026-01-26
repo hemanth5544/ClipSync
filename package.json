@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "clean": "turbo run clean && rm -rf node_modules",
@@ -16,6 +15,23 @@
     "backend:migrate": "cd apps/backend && go run cmd/server/main.go migrate",
     "backend:build:railway": "cd apps/backend && go build -o bin/server ./cmd/server",
     "backend:start:railway": "cd apps/backend && ./bin/server",
+    
+    "prisma:generate": "cd apps/desktop && pnpm prisma:generate",
+    "prisma:db:push": "cd apps/desktop && pnpm prisma:db:push",
+    "prisma:studio": "cd apps/desktop && dotenv -e ../../.env -- npx prisma studio --schema=./prisma/schema.prisma",
+    "prisma:migrate": "cd apps/desktop && dotenv -e ../../.env -- npx prisma migrate dev --schema=./prisma/schema.prisma",
+    
+    "desktop:dev": "cd apps/desktop && pnpm dev",
+    "desktop:build": "cd apps/desktop && pnpm build",
+    "electron:dev": "cd apps/desktop && pnpm electron:dev",
+    "electron:dev:network": "cd apps/desktop && pnpm electron:dev:network",
+    "electron:build": "cd apps/desktop && pnpm electron:build",
+    
+    "mobile:start": "cd apps/mobile && pnpm start",
+    "mobile:start:clear": "cd apps/mobile && pnpm start:clear",
+    "mobile:android": "cd apps/mobile && pnpm android",
+    "mobile:ios": "cd apps/mobile && pnpm ios",
+    "mobile:web": "cd apps/mobile && pnpm web",
     
     "db:migrate": "cd apps/backend && go run cmd/server/main.go migrate",
     "db:setup": "docker-compose up -d postgres"

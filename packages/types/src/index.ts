@@ -14,6 +14,7 @@ export interface Clip {
   contentPreview: string;
   copiedAt: string;
   isFavorite: boolean;
+  isPinned: boolean;
   tags: string[];
   deviceName: string | null;
   synced: boolean;
@@ -36,6 +37,7 @@ export interface CreateClipRequest {
 export interface UpdateClipRequest {
   content?: string;
   isFavorite?: boolean;
+  isPinned?: boolean;
   tags?: string[];
 }
 
