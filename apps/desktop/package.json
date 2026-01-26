@@ -5,6 +5,7 @@
   "main": "electron/main.js",
   "scripts": {
     "dev": "next dev",
+    "dev:network": "next dev -H 0.0.0.0",
     "build": "next build",
     "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
     "prisma:db:push": "prisma db push --schema=./prisma/schema.prisma",
@@ -13,6 +14,7 @@
     "type-check": "tsc --noEmit",
     "electron": "electron .",
     "electron:dev": "concurrently \"pnpm dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron:dev:network": "concurrently \"pnpm dev:network\" \"wait-on http://localhost:3000 && electron .\"",
     "electron:build": "pnpm build && electron-builder",
     "clean": "rm -rf .next out dist"
   },
