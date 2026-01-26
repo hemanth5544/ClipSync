@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "ClipSync",
+    "slug": "clipsync-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.clipsync.mobile",
+      "associatedDomains": ["applinks:localhost"]
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.clipsync.mobile",
+      "permissions": ["CLIPBOARD_READ", "CLIPBOARD_WRITE"],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "clipsync",
+              "host": "pair"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "clipsync",
+    "extra": {
+      "apiUrl": "http://192.168.1.7:8080/api",
+      "authUrl": "http://192.168.1.7:3000"
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}
