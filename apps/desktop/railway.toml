@@ -1,0 +1,17 @@
+# Railway Configuration for Desktop Next.js App
+# IMPORTANT: In Railway Dashboard:
+# 1. Settings → Source → Root Directory: Leave EMPTY (use repo root)
+# 2. Settings → Build → Builder: Use "Nixpacks" or "Railpack" (Default)
+# 3. The build command below will handle the monorepo structure
+
+[build]
+builder = "NIXPACKS"
+# Install root dependencies first, then desktop app dependencies, then build
+buildCommand = "pnpm install && cd apps/desktop && pnpm install && pnpm prisma:generate && pnpm build"
+
+[deploy]
+# Next.js standalone: server.js is in .next/standalone, static files in .next/static
+# We need to run from the desktop directory so paths resolve correctly
+startCommand = "cd apps/desktop && node .next/standalone/server.js"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10

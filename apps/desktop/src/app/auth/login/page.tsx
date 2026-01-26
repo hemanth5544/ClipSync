@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { signIn } from "@/lib/better-auth";
 import { initiateSocialSignIn } from "@/lib/oauth";
 import { Button, Input, Label, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@clipsync/ui";
@@ -10,7 +9,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,7 +141,7 @@ export default function LoginPage() {
             </div>
           </div>
           <p className="text-center text-sm text-muted-foreground mt-4">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <a href="/auth/signup" className="text-primary hover:underline">
               Sign up
             </a>
