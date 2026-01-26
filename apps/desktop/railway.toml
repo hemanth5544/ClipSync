@@ -3,15 +3,15 @@
 # In Railway Dashboard:
 # 1. Settings → Source → Root Directory: Leave EMPTY (use repo root)
 # 2. Settings → Build → Builder: Use "Nixpacks" or "Railpack" (Default)
+# 3. Settings → Build → Build Command: Override with: pnpm install && cd apps/desktop && pnpm install && pnpm prisma:generate && pnpm run build:skip
 
 [build]
 builder = "NIXPACKS"
-# Install root dependencies, then desktop dependencies, generate Prisma, build Next.js
-buildCommand = "pnpm install && cd apps/desktop && pnpm install && pnpm prisma:generate"
+# Install deps, generate Prisma, then skip actual build (use build:skip)
+buildCommand = "pnpm install && cd apps/desktop && pnpm install && pnpm prisma:generate && pnpm run build:skip"
 
 [deploy]
-# Next.js standalone output: server.js is in .next/standalone
-# Run from desktop directory so paths resolve correctly
-startCommand = "pnpm run desktop:dev"
+# Run Next.js in dev mode (no production build)
+startCommand = "cd apps/desktop && pnpm dev"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10

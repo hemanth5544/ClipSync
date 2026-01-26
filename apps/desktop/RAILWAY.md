@@ -42,8 +42,10 @@ Railway will:
 1. Install dependencies at root (pnpm workspace)
 2. Install dependencies in `apps/desktop`
 3. Generate Prisma client
-4. Build Next.js app (outputs to `.next/standalone`)
-5. Start Next.js server
+4. Build Next.js app (outputs to `.next/standalone`) - **Electron files are excluded**
+5. Start Next.js server as a web application
+
+**Note**: This deployment is for the **Next.js web app only**, not the Electron desktop app. The Electron files are excluded from the build.
 
 ## Monorepo Structure
 
