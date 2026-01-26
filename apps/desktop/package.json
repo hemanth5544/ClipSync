@@ -1,0 +1,52 @@
+{
+  "name": "@clipsync/desktop",
+  "version": "1.0.0",
+  "private": true,
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
+    "prisma:db:push": "prisma db push --schema=./prisma/schema.prisma",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "electron": "electron .",
+    "electron:dev": "concurrently \"pnpm dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron:build": "pnpm build && electron-builder",
+    "clean": "rm -rf .next out dist"
+  },
+  "dependencies": {
+    "@clipsync/types": "workspace:*",
+    "@clipsync/ui": "workspace:*",
+    "better-auth": "^1.0.0",
+    "electron-updater": "^6.1.7",
+    "framer-motion": "^10.18.0",
+    "next": "^14.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zustand": "^4.5.0",
+    "@prisma/client": "^5.9.0",
+    "jsonwebtoken": "^9.0.2",
+    "next-themes": "^0.2.1"
+  },
+  "devDependencies": {
+    "@clipsync/eslint-config": "workspace:*",
+    "@clipsync/tsconfig": "workspace:*",
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "@types/jsonwebtoken": "^9.0.5",
+    "autoprefixer": "^10.4.17",
+    "concurrently": "^8.2.2",
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1",
+    "eslint": "^8.56.0",
+    "postcss": "^8.4.33",
+    "prisma": "^5.9.0",
+    "@better-auth/cli": "^1.0.0",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3",
+    "wait-on": "^7.2.0"
+  }
+}

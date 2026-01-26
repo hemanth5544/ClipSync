@@ -1,0 +1,20 @@
+appId: com.clipsync.app
+productName: ClipSync
+directories:
+  buildResources: build
+files:
+  - package.json
+  - out/**
+  - electron/**
+  - node_modules/**
+win:
+  target: nsis
+  icon: assets/icon.ico
+mac:
+  target: dmg
+  icon: assets/icon.icns
+  category: public.app-category.productivity
+linux:
+  target: AppImage
+  icon: assets/icon.png
+  category: Utility
