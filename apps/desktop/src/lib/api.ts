@@ -4,7 +4,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 async function getAuthToken(): Promise<string | null> {
   try {
-    const response = await fetch("/api/token", {
+    // Call external auth service (apps/auth on port 3001)
+    const authServiceUrl = process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3001";
+    const response = await fetch(`${authServiceUrl}/api/token`, {
       credentials: "include", // Send cookies
     });
     

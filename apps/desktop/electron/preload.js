@@ -1,21 +1,17 @@
-const { contextBridge, ipcRenderer } = require('electron');
-
-contextBridge.exposeInMainWorld('electronAPI', {
-  getClipboard: () => ipcRenderer.invoke('get-clipboard'),
-  setClipboard: (text) => ipcRenderer.invoke('set-clipboard', text),
-  getDeviceInfo: () => ipcRenderer.invoke('get-device-info'),
-  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
-  testIPC: () => ipcRenderer.invoke('test-ipc'),
-  openExternal: (url) => ipcRenderer.invoke('open-external', url),
-  onClipboardChanged: (callback) => {
-    console.log('Preload: Setting up clipboard change listener');
-    ipcRenderer.on('clipboard-changed', (_event, data) => {
-      console.log('Preload: Received clipboard-changed event', data);
-      callback(data);
-    });
-  },
-  removeClipboardListener: () => {
-    console.log('Preload: Removing clipboard listener');
-    ipcRenderer.removeAllListeners('clipboard-changed');
-  },
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const electron_1 = require("electron");
+// Expose protected methods that allow the renderer process to use
+// the ipcRenderer without exposing the entire object
+electron_1.contextBridge.exposeInMainWorld('electronAPI', {
+    getClipboard: () => electron_1.ipcRenderer.invoke('get-clipboard'),
+    setClipboard: (text) => electron_1.ipcRenderer.invoke('set-clipboard', text),
+    getDeviceInfo: () => electron_1.ipcRenderer.invoke('get-device-info'),
+    getAppVersion: () => electron_1.ipcRenderer.invoke('get-app-version'),
+    onClipboardChanged: (callback) => {
+        electron_1.ipcRenderer.on('clipboard-changed', (_event, data) => callback(data));
+    },
+    removeClipboardListener: () => {
+        electron_1.ipcRenderer.removeAllListeners('clipboard-changed');
+    },
 });

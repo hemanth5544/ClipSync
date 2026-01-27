@@ -1,7 +1,8 @@
 import { createAuthClient } from "better-auth/react";
 
+// Use external auth service (apps/auth on port 3001)
 const client = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000",
+  baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3001",
 });
 
 export const authClient = client;

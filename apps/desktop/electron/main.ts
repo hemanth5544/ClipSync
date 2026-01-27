@@ -2,11 +2,18 @@ import { app, BrowserWindow, Tray, Menu, globalShortcut, clipboard, ipcMain, nat
 import { autoUpdater } from 'electron-updater';
 import * as path from 'path';
 import * as os from 'os';
+import { config } from 'dotenv';
+
+// Load environment variables from .env file (for Electron)
+// In production, env vars should be set by the system or bundled
+const envPath = path.resolve(__dirname, '../../.env');
+config({ path: envPath });
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let lastClipboardContent = '';
 let clipboardCheckInterval: NodeJS.Timeout | null = null;
+let isQuitting = false;
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
@@ -41,10 +48,16 @@ function createWindow() {
   });
 
   mainWindow.on('close', (event) => {
-    if (!app.isQuitting) {
+    if (!isQuitting) {
       event.preventDefault();
       mainWindow?.hide();
     }
+  });
+
+  // Show window when ready
+  mainWindow.once('ready-to-show', () => {
+    mainWindow?.show();
+    mainWindow?.focus();
   });
 }
 
@@ -82,13 +95,13 @@ function createTray() {
       },
     },
     { type: 'separator' },
-    {
-      label: 'Quit',
-      click: () => {
-        app.isQuitting = true;
-        app.quit();
-      },
-    },
+        {
+          label: 'Quit',
+          click: () => {
+            isQuitting = true;
+            app.quit();
+          },
+        },
   ]);
 
   tray.setToolTip('ClipSync - Clipboard Manager');

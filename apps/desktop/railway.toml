@@ -1,25 +1,18 @@
 # Railway Configuration for Desktop Next.js Web App
 # IMPORTANT: This deploys ONLY the Next.js web app (NOT Electron)
 # 
-# REQUIRED: Set DATABASE_URL in Railway Dashboard → Variables
-# 1. Go to your Desktop service → Variables tab
-# 2. Click "+ New Variable"
-# 3. Name: DATABASE_URL
-# 4. Value: Click "Reference" and select your PostgreSQL service's DATABASE_URL
-#    OR manually set: postgresql://user:pass@host:port/dbname
-# 5. See RAILWAY_SETUP.md for detailed instructions
+# Desktop app now uses external auth service (apps/auth)
+# No database connection needed in desktop app
 #
 # In Railway Dashboard:
 # 1. Settings → Source → Root Directory: Leave EMPTY (use repo root)
 # 2. Settings → Build → Builder: Use "Nixpacks" or "Railpack" (Default)
-# 3. Settings → Build → Build Command: Override with: pnpm install && cd apps/desktop && pnpm install && pnpm prisma:generate && pnpm run build:skip
+# 3. Settings → Build → Build Command: Override with: pnpm install && cd apps/desktop && pnpm install && pnpm run build:skip
 
 [build]
 builder = "NIXPACKS"
-# Install deps, generate Prisma, run migrations, then skip actual build (use build:skip)
-# Note: Migrations run during build, not pre-deploy (more reliable)
-# Check env vars first for debugging
-buildCommand = "pnpm install && cd apps/desktop && pnpm install && node scripts/check-env.js || true && pnpm prisma:generate && (pnpm prisma:db:push || echo 'Migration skipped/failed') && pnpm run build:skip"
+# Install deps and build (no Prisma needed - uses external auth service)
+buildCommand = "pnpm install && cd apps/desktop && pnpm install && pnpm run build:skip"
 
 [deploy]
 # Dev script already generates Prisma client, just start it

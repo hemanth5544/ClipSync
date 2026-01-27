@@ -2,19 +2,48 @@ appId: com.clipsync.app
 productName: ClipSync
 directories:
   buildResources: build
+  output: dist
 files:
   - package.json
   - out/**
   - electron/**
-  - node_modules/**
+  - node_modules/better-auth/**
+  - node_modules/@clipsync/**
+  - "!node_modules/**/*.{md,ts,map}"
+
+# Include .env.example (users will need to create their own .env)
+extraFiles:
+  - from: .env.example
+    to: .env.example
+
 win:
-  target: nsis
+  target: 
+    - target: nsis
+      arch:
+        - x64
   icon: assets/icon.ico
+  publisherName: ClipSync
+
 mac:
-  target: dmg
+  target: 
+    - target: dmg
+      arch:
+        - x64
+        - arm64
   icon: assets/icon.icns
   category: public.app-category.productivity
+
 linux:
-  target: AppImage
+  target: 
+    - target: AppImage
+      arch:
+        - x64
   icon: assets/icon.png
   category: Utility
+
+# NSIS installer configuration (Windows)
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true

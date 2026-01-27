@@ -34,15 +34,17 @@ export function useClipboard() {
         });
     }
 
-    window.electronAPI.getDeviceInfo()
-      .then((info) => {
-        setDeviceInfo(info);
-        deviceInfoRef.current = info.name;
-        console.log("Device info loaded:", info.name);
-      })
-      .catch((err) => {
-        console.error("Failed to get device info:", err);
-      });
+    if (window.electronAPI) {
+      window.electronAPI.getDeviceInfo()
+        .then((info) => {
+          setDeviceInfo(info);
+          deviceInfoRef.current = info.name;
+          console.log("Device info loaded:", info.name);
+        })
+        .catch((err) => {
+          console.error("Failed to get device info:", err);
+        });
+    }
 
     const handleClipboardChange = async (data: {
       content: string;
@@ -88,11 +90,15 @@ export function useClipboard() {
     };
 
     console.log("Registering clipboard change listener...");
-    window.electronAPI.onClipboardChanged(handleClipboardChange);
+    if (window.electronAPI) {
+      window.electronAPI.onClipboardChanged(handleClipboardChange);
+    }
 
     return () => {
       console.log("Cleaning up clipboard listener");
-      window.electronAPI.removeClipboardListener();
+      if (window.electronAPI) {
+        window.electronAPI.removeClipboardListener();
+      }
     };
   }, []);
 
