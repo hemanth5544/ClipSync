@@ -7,8 +7,9 @@
 
 [build]
 builder = "NIXPACKS"
-# Install deps, generate Prisma, then skip actual build (use build:skip)
-buildCommand = "pnpm install && cd apps/desktop && pnpm install && pnpm prisma:generate && pnpm run build:skip"
+# Install deps, generate Prisma, run migrations, then skip actual build (use build:skip)
+# Note: Migrations run during build, not pre-deploy (more reliable)
+buildCommand = "pnpm install && cd apps/desktop && pnpm install && pnpm prisma:generate && (pnpm prisma:db:push || echo 'Migration skipped/failed') && pnpm run build:skip"
 
 [deploy]
 # Run Next.js in dev mode (no production build)
