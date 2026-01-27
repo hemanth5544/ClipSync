@@ -17,7 +17,7 @@
 # - GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
 #
 # In Railway Dashboard:
-# 1. Settings → Source → Root Directory: Set to "apps/auth"
+# 1. Settings → Source → Root Directory: Leave EMPTY (use repo root)
 # 2. Settings → Build → Builder: Change from "Railpack" to "Dockerfile"
 #    This ensures Railway uses Docker instead of auto-detecting Node.js
 

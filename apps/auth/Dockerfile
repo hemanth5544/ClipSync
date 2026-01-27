@@ -7,7 +7,7 @@ RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
 # Set working directory
 WORKDIR /app
 
-# Copy workspace files
+# Copy workspace files from repo root
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Copy packages (needed for workspace dependencies)
