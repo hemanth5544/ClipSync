@@ -18,21 +18,17 @@
 #
 # In Railway Dashboard:
 # 1. Settings → Source → Root Directory: Set to "apps/auth"
-# 2. Settings → Build → Builder: Use "Nixpacks" or "Railpack" (Default)
-# 3. Settings → Build → Build Command: Auto-detected from railway.toml
-# 4. Settings → Deploy → Start Command: Auto-detected from railway.toml
+# 2. Settings → Build → Builder: Change from "Railpack" to "Dockerfile"
+#    This ensures Railway uses Docker instead of auto-detecting Node.js
 
+# Use Dockerfile for build - handles pnpm workspace dependencies correctly
 [build]
-builder = "NIXPACKS"
-# Force Railway to use pnpm instead of npm
-installCommand = "corepack enable && corepack prepare pnpm@8.15.0 --activate && pnpm install"
-# When Root Directory is apps/auth, we start from that directory
-# Go up to repo root to install workspace deps, then build in apps/auth
-buildCommand = "cd ../.. && pnpm install && cd apps/auth && pnpm prisma:generate && (pnpm prisma:db:push || echo 'Migration skipped/failed') && pnpm build"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+# Build command is in Dockerfile
 
 [deploy]
-# Start the production Next.js server
-# We're already in apps/auth directory when Root Directory is set to apps/auth
-startCommand = "pnpm start"
+# Start command is in Dockerfile: "node server.js"
+# Railway will automatically use the CMD from Dockerfile
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
