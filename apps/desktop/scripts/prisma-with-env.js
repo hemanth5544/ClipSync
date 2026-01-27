@@ -4,9 +4,14 @@ const { execSync } = require('child_process');
 const path = require('path');
 const { config } = require('dotenv');
 
-// Load root .env file
+// Load root .env file (if it exists)
+// In Railway, env vars are already in process.env, so this is just for local dev
 const rootEnvPath = path.resolve(__dirname, '../../../.env');
-config({ path: rootEnvPath });
+try {
+  config({ path: rootEnvPath });
+} catch (e) {
+  // .env file doesn't exist (e.g., in Railway), that's okay - use process.env
+}
 
 // Get the command to run (everything after the script name)
 const args = process.argv.slice(2);

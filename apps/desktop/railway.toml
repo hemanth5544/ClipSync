@@ -12,7 +12,7 @@ builder = "NIXPACKS"
 buildCommand = "pnpm install && cd apps/desktop && pnpm install && pnpm prisma:generate && (pnpm prisma:db:push || echo 'Migration skipped/failed') && pnpm run build:skip"
 
 [deploy]
-# Run Next.js in dev mode (no production build)
+# Dev script already generates Prisma client, just start it
 startCommand = "cd apps/desktop && pnpm dev"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
