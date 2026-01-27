@@ -3,6 +3,7 @@ package api
 import (
 	"clipsync/backend/internal/api/handlers"
 	"clipsync/backend/internal/api/middleware"
+	"clipsync/backend/internal/config"
 	"gorm.io/gorm"
 
 	"github.com/gin-contrib/cors"
@@ -12,12 +13,20 @@ import (
 func InitializeRouter(db *gorm.DB) *gin.Engine {
 	router := gin.Default()
 
+	// Get allowed origins from config
+	allowedOrigins := config.Get().AllowedOrigins
+	if len(allowedOrigins) == 0 {
+		// Fallback to default if not configured
+		allowedOrigins = []string{"http://localhost:3000", "http://localhost:3001", "http://192.168.1.7:3000"}
+	}
+
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001", "http://192.168.1.7:3000"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
+		AllowOrigins:     allowedOrigins,
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "X-Requested-With"},
+		ExposeHeaders:    []string{"Content-Length", "Content-Type"},
 		AllowCredentials: true,
+		MaxAge:           12 * 3600, // 12 hours
 	}))
 
 	authHandler := handlers.NewAuthHandler(db)
