@@ -4,12 +4,14 @@
 # 2. Settings → Build → Builder: Change from "Railpack" to "Dockerfile"
 # This prevents Railway from detecting Node.js and using Railpack
 
-# Use Dockerfile for build (most reliable way to ensure Go build)
+# Use Dockerfile for build - builds Go binary only (no Node.js)
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
+# Build command is in Dockerfile: "go build -o bin/server ./cmd/server"
 
 [deploy]
+# Start the compiled Go binary (no build needed at runtime)
 startCommand = "./server"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10

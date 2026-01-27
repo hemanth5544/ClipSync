@@ -13,7 +13,7 @@ import { formatRelativeTime } from "@/lib/timeUtils";
 import { isURL, normalizeURL, openURL } from "@/lib/urlUtils";
 import { analyzeContent } from "@/lib/contentUtils";
 import ClipPreviewModal from "./ClipPreviewModal";
-import ClipSkeletonList from "./ClipSkeleton";
+import { ClipSkeletonList } from "./ClipSkeleton";
 import EmptyState from "./EmptyState";
 
 interface ClipListProps {

@@ -1,8 +1,29 @@
+# Exclude Node.js files (this is a Go-only service)
 node_modules
+package.json
+package-lock.json
+pnpm-lock.yaml
+pnpm-workspace.yaml
+*.js
+*.ts
+*.tsx
+.next
+dist
+out
+
+# Exclude other files
 .git
 .gitignore
 *.md
 .env
 .env.local
+.env.prod
 bin/
 *.log
+
+# Exclude other app directories
+../desktop
+../mobile
+../../apps/desktop
+../../apps/mobile
+../../packages
