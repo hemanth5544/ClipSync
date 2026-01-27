@@ -17,20 +17,22 @@
 # - GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
 #
 # In Railway Dashboard:
-# 1. Settings → Source → Root Directory: Leave EMPTY (use repo root)
+# 1. Settings → Source → Root Directory: Set to "apps/auth"
 # 2. Settings → Build → Builder: Use "Nixpacks" or "Railpack" (Default)
-# 3. Settings → Build → Build Command: Override with the buildCommand below
-# 4. Settings → Deploy → Start Command: Override with the startCommand below
+# 3. Settings → Build → Build Command: Auto-detected from railway.toml
+# 4. Settings → Deploy → Start Command: Auto-detected from railway.toml
 
 [build]
 builder = "NIXPACKS"
-# Install deps, generate Prisma client, push schema, then build
-# Note: Prisma db push runs during build (more reliable than pre-deploy)
-buildCommand = "pnpm install && cd apps/auth && pnpm install && pnpm prisma:generate && (pnpm prisma:db:push || echo 'Migration skipped/failed') && pnpm build"
+# Force Railway to use pnpm instead of npm
+installCommand = "corepack enable && corepack prepare pnpm@8.15.0 --activate && pnpm install"
+# When Root Directory is apps/auth, we start from that directory
+# Go up to repo root to install workspace deps, then build in apps/auth
+buildCommand = "cd ../.. && pnpm install && cd apps/auth && pnpm prisma:generate && (pnpm prisma:db:push || echo 'Migration skipped/failed') && pnpm build"
 
 [deploy]
 # Start the production Next.js server
-# Port is automatically set by Railway via PORT environment variable
-startCommand = "cd apps/auth && pnpm start"
+# We're already in apps/auth directory when Root Directory is set to apps/auth
+startCommand = "pnpm start"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
