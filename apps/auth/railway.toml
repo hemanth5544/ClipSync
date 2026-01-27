@@ -24,7 +24,7 @@
 # Use Dockerfile for build - handles pnpm workspace dependencies correctly
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
+dockerfilePath = "apps/auth/Dockerfile"
 # Build command is in Dockerfile
 
 [deploy]
