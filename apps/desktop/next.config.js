@@ -18,14 +18,40 @@ const databaseUrl = process.env.DATABASE_URL ||
                     process.env.POSTGRES_PRIVATE_URL ||
                     process.env.POSTGRES_PUBLIC_URL;
 
-console.log('Next.js config - DATABASE_URL:', databaseUrl ? 'SET' : 'NOT SET');
+console.log('=== Next.js Config - Environment Check ===');
+console.log('DATABASE_URL:', databaseUrl ? '✅ SET' : '❌ NOT SET');
+
+// Log ALL env vars to help debug Railway issues
+const isRailway = !!process.env.RAILWAY_ENVIRONMENT || !!process.env.RAILWAY_PROJECT_ID;
+console.log('Running in Railway:', isRailway);
+if (isRailway) {
+  console.log('Railway Environment:', process.env.RAILWAY_ENVIRONMENT);
+  console.log('Railway Project ID:', process.env.RAILWAY_PROJECT_ID);
+}
+
 if (!databaseUrl) {
-  console.warn('WARNING: DATABASE_URL not found. Available Railway env vars:');
+  console.warn('⚠️  WARNING: DATABASE_URL not found in Next.js config!');
+  console.warn('Available Railway env vars:');
   const railwayVars = Object.keys(process.env)
     .filter(k => k.includes('DATABASE') || k.includes('DB') || k.includes('POSTGRES') || k.includes('RAILWAY'))
-    .slice(0, 10); // Limit output
-  console.warn(railwayVars.length > 0 ? railwayVars : 'None found');
+    .slice(0, 20); // Show more vars
+  if (railwayVars.length > 0) {
+    railwayVars.forEach(k => {
+      const val = process.env[k] || '';
+      const preview = val.length > 30 ? val.substring(0, 30) + '...' : val;
+      console.warn(`  ${k}=${preview}`);
+    });
+  } else {
+    console.warn('  None found! Railway env vars may not be available at build time.');
+    console.warn('  They should be available at runtime though.');
+  }
+} else {
+  const preview = databaseUrl.length > 40 
+    ? `${databaseUrl.substring(0, 20)}...${databaseUrl.substring(databaseUrl.length - 20)}`
+    : databaseUrl.substring(0, 20) + '...';
+  console.log('DATABASE_URL preview:', preview);
 }
+console.log('==========================================');
 
 const nextConfig = {
   output: 'standalone',
