@@ -1,0 +1,36 @@
+# Railway Configuration for ClipSync Auth Service
+# This is the standalone authentication service used by desktop and mobile apps
+#
+# REQUIRED Environment Variables (set in Railway Dashboard → Variables):
+# 1. DATABASE_URL - PostgreSQL connection string
+#    - Go to your PostgreSQL service → Variables → Copy DATABASE_URL
+#    - Or manually set: postgresql://user:pass@host:port/dbname
+# 2. BETTER_AUTH_SECRET - Secret key for Better-Auth (generate a random string)
+# 3. JWT_SECRET - Secret key for JWT tokens (generate a random string)
+# 4. BETTER_AUTH_BASE_URL - Public URL of this auth service
+#    - Example: https://clipsync-auth.up.railway.app
+# 5. ALLOWED_ORIGINS - Comma-separated list of allowed CORS origins
+#    - Example: http://localhost:3000,https://clipsync.up.railway.app
+#
+# Optional (for OAuth):
+# - GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+# - GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
+#
+# In Railway Dashboard:
+# 1. Settings → Source → Root Directory: Leave EMPTY (use repo root)
+# 2. Settings → Build → Builder: Use "Nixpacks" or "Railpack" (Default)
+# 3. Settings → Build → Build Command: Override with the buildCommand below
+# 4. Settings → Deploy → Start Command: Override with the startCommand below
+
+[build]
+builder = "NIXPACKS"
+# Install deps, generate Prisma client, push schema, then build
+# Note: Prisma db push runs during build (more reliable than pre-deploy)
+buildCommand = "pnpm install && cd apps/auth && pnpm install && pnpm prisma:generate && (pnpm prisma:db:push || echo 'Migration skipped/failed') && pnpm build"
+
+[deploy]
+# Start the production Next.js server
+# Port is automatically set by Railway via PORT environment variable
+startCommand = "cd apps/auth && pnpm start"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10

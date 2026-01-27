@@ -17,10 +17,14 @@
     "backend:build:railway": "cd apps/backend && go build -o bin/server ./cmd/server",
     "backend:start:railway": "cd apps/backend && ./bin/server",
     
-    "prisma:generate": "cd apps/desktop && pnpm prisma:generate",
-    "prisma:db:push": "cd apps/desktop && pnpm prisma:db:push",
-    "prisma:studio": "cd apps/desktop && dotenv -e ../../.env -- npx prisma studio --schema=./prisma/schema.prisma",
-    "prisma:migrate": "cd apps/desktop && dotenv -e ../../.env -- npx prisma migrate dev --schema=./prisma/schema.prisma",
+    "prisma:generate": "cd apps/auth && pnpm prisma:generate",
+    "prisma:db:push": "cd apps/auth && pnpm prisma:db:push",
+    "prisma:studio": "cd apps/auth && dotenv -e ../../.env -- npx prisma studio --schema=./prisma/schema.prisma",
+    "prisma:migrate": "cd apps/auth && dotenv -e ../../.env -- npx prisma migrate dev --schema=./prisma/schema.prisma",
+    
+    "auth:dev": "cd apps/auth && pnpm dev",
+    "auth:build": "cd apps/auth && pnpm build",
+    "auth:start": "cd apps/auth && pnpm start",
     
     "desktop:dev": "cd apps/desktop && pnpm dev",
     "desktop:build": "cd apps/desktop && pnpm build",
