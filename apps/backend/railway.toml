@@ -1,17 +1,11 @@
-# Railway Configuration for Go Backend
-# IMPORTANT: In Railway Dashboard:
-# 1. Settings → Source → Root Directory: Set to "apps/backend"
-# 2. Settings → Build → Builder: Change from "Railpack" to "Dockerfile"
-# This prevents Railway from detecting Node.js and using Railpack
+# Railway Configuration for Go Backend (no Docker)
+# In Railway Dashboard: Settings → Source → Root Directory = "apps/backend"
 
-# Use Dockerfile for build - builds Go binary only (no Node.js)
 [build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
-# Build command is in Dockerfile: "go build -o bin/server ./cmd/server"
+builder = "RAILPACK"
+buildCommand = "go build -o server ./cmd/server"
 
 [deploy]
-# Start the compiled Go binary (no build needed at runtime)
 startCommand = "./server"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
