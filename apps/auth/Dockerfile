@@ -38,6 +38,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV SKIP_ENV_VALIDATION=true
 
+# Provide dummy DATABASE_URL for build (Next.js needs it during build-time analysis)
+# Railway will provide the real DATABASE_URL at runtime
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+
 # Generate Prisma client (doesn't need DATABASE_URL for generate)
 RUN cd apps/auth && pnpm prisma:generate
 

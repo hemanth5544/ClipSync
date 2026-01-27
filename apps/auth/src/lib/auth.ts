@@ -8,6 +8,12 @@ const getDatabaseUrl = (): string => {
     return process.env.DATABASE_URL;
   }
   
+  // During build time, return a dummy URL (Next.js needs it for static analysis)
+  // At runtime, Railway will provide the real DATABASE_URL
+  if (process.env.NODE_ENV === 'production' && process.env.SKIP_ENV_VALIDATION) {
+    return "postgresql://dummy:dummy@localhost:5432/dummy";
+  }
+  
   throw new Error(
     "DATABASE_URL is required but not set.\n" +
     "Make sure DATABASE_URL is set in your .env file or environment variables."
