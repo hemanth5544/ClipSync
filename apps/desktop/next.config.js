@@ -2,8 +2,16 @@
 const path = require('path');
 const { config } = require('dotenv');
 
-// Load environment variables from root .env file
-config({ path: path.resolve(__dirname, '../../.env') });
+// Load environment variables from root .env file (for local dev)
+// In Railway, env vars are already in process.env
+try {
+  config({ path: path.resolve(__dirname, '../../.env') });
+} catch (e) {
+  // .env file doesn't exist (e.g., in Railway), that's okay
+}
+
+// Log DATABASE_URL status (without exposing the actual URL)
+console.log('Next.js config - DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
 
 const nextConfig = {
   output: 'standalone',
@@ -11,7 +19,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Explicitly load env vars from root
+  // Explicitly pass env vars to Next.js (Railway env vars are already in process.env)
   env: {
     DATABASE_URL: process.env.DATABASE_URL,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
