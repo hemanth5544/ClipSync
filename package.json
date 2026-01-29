@@ -29,6 +29,7 @@
     "desktop:dev": "cd apps/desktop && pnpm dev",
     "desktop:build": "cd apps/desktop && pnpm build",
     "electron:dev": "cd apps/desktop && pnpm electron:dev",
+    "electron:dev:prod": "cd apps/desktop && pnpm electron:dev:prod",
     "electron:dev:network": "cd apps/desktop && pnpm electron:dev:network",
     "electron:build": "cd apps/desktop && pnpm electron:build",
     

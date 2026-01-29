@@ -1,12 +1,34 @@
 import { Clip, CreateClipRequest, PaginatedResponse } from "@clipsync/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+function ensureAbsoluteUrl(raw: string, defaultVal: string): string {
+  const val = (raw || defaultVal).trim().replace(/\/+$/, "");
+  if (!val) return defaultVal;
+  if (/^https?:\/\//i.test(val)) return val;
+  // Malformed scheme, e.g. "http:localhost:3001" -> "http://localhost:3001"
+  if (/^https?:/i.test(val)) return val.replace(/^(https?:)(\/\/)?/i, (_, scheme) => `${scheme}//`);
+  const base = val;
+  return base.startsWith("localhost") || base.startsWith("127.0.0.1")
+    ? `http://${base}`
+    : `https://${base}`;
+}
+
+const API_URL = ensureAbsoluteUrl(
+  process.env.NEXT_PUBLIC_API_URL as string,
+  "http://localhost:8080/api"
+);
+
+export function getAuthBase(): string {
+  return ensureAbsoluteUrl(
+    process.env.NEXT_PUBLIC_BETTER_AUTH_URL as string,
+    "http://localhost:3001"
+  );
+}
 
 async function getAuthToken(): Promise<string | null> {
   try {
-    // Call external auth service (apps/auth on port 3001)
-    const authServiceUrl = process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3001";
-    const response = await fetch(`${authServiceUrl}/api/token`, {
+    const authBase = getAuthBase();
+    const tokenUrl = `${authBase}/api/token`;
+    const response = await fetch(tokenUrl, {
       credentials: "include", // Send cookies
     });
     
@@ -15,7 +37,6 @@ async function getAuthToken(): Promise<string | null> {
       console.error("Token API error:", response.status, errorData);
       return null;
     }
-    
     const data = await response.json();
     if (!data.token) {
       console.error("No token in response:", data);

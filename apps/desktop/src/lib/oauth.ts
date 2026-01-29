@@ -1,42 +1,37 @@
-
-
 import { signIn } from "@/lib/better-auth";
+import { getAuthBase } from "@/lib/api";
 
-export async function initiateSocialSignIn(provider: "google" | "github", callbackURL: string = "/") {
+/**
+ * Resolve callback URL to a full URL so the auth service (different domain)
+ * redirects back to this app after OAuth, not to the auth service's root.
+ */
+export function getFullCallbackURL(path: string = "/"): string {
+  if (typeof window === "undefined") return path;
+  const origin = window.location.origin;
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return `${origin}${p}`;
+}
+
+export async function initiateSocialSignIn(
+  provider: "google" | "github",
+  callbackURL: string = "/"
+): Promise<void> {
+  const fullCallbackURL = getFullCallbackURL(callbackURL);
   try {
-    console.log(`Initiating ${provider} OAuth flow with callbackURL: ${callbackURL}`);
-    
-   
     const result = await signIn.social({
-      provider: provider,
-      callbackURL: callbackURL,
+      provider,
+      callbackURL: fullCallbackURL,
     });
-    
-    console.log("OAuth sign-in result:", result);
-  
     const redirectURL = result?.url || result?.redirect || (result as any)?.data?.url;
-    
     if (redirectURL) {
-      console.log("Redirecting to:", redirectURL);
       window.location.href = redirectURL;
       return;
     }
-    
-    if (result?.error) {
-      throw new Error(result.error);
-    }
-    
-
-    console.warn("No redirect URL in result, trying manual construction...");
-    const baseURL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000";
-    
-    const oauthURL = `${baseURL}/api/auth/social/${provider}?callbackURL=${encodeURIComponent(callbackURL)}`;
-    console.log("Manually redirecting to:", oauthURL);
-    window.location.href = oauthURL;
-    
+    if (result?.error) throw new Error(result.error);
+    const base = getAuthBase();
+    window.location.href = `${base}/api/auth/sign-in/social?provider=${provider}&callbackURL=${encodeURIComponent(fullCallbackURL)}`;
   } catch (error: any) {
     console.error(`Failed to initiate ${provider} sign-in:`, error);
-    console.error("Error details:", error.message, error.stack);
     throw error;
   }
 }

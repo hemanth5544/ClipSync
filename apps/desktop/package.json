@@ -14,6 +14,7 @@
     "type-check:web": "tsc --noEmit --skipLibCheck",
     "electron": "electron .",
     "electron:dev": "concurrently \"BROWSER=none pnpm dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron:dev:prod": "concurrently \"USE_PROD_ENV=1 BROWSER=none pnpm dev\" \"wait-on http://localhost:3000 && electron .\"",
     "electron:dev:network": "concurrently \"pnpm dev:network\" \"wait-on http://localhost:3000 && electron .\"",
     "electron:build:ts": "tsc electron/main.ts electron/preload.ts --outDir electron --target es2020 --module commonjs --esModuleInterop --skipLibCheck --resolveJsonModule",
     "electron:build": "pnpm build && pnpm electron:build:ts && electron-builder",

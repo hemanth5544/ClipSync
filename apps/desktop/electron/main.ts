@@ -29,6 +29,8 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
+      // CSP warning in dev (unsafe-eval from Next.js Fast Refresh) goes away when packaged.
+      // See https://electronjs.org/docs/tutorial/security
     },
     show: false,
   });

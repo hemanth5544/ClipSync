@@ -1,8 +1,11 @@
 import { createAuthClient } from "better-auth/react";
+import { getAuthBase } from "@/lib/api";
 
-// Use external auth service (apps/auth on port 3001)
 const client = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3001",
+  baseURL: getAuthBase(),
+  fetchOptions: {
+    credentials: "include", // required for cross-origin session (auth on different domain)
+  },
 });
 
 export const authClient = client;

@@ -10,16 +10,28 @@ import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
 import { useClipboard } from "@/hooks/useClipboard";
 
 export default function Home() {
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending, refetch } = useSession();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  useClipboard(); 
+  const refetchedOnce = useRef(false);
+  useClipboard();
+
+  // After OAuth redirect, cookie may be set but first get-session can run before it.
+  // Refetch once when we have no session so cross-domain cookie is picked up.
+  useEffect(() => {
+    if (!isPending && !session && typeof refetch === "function" && !refetchedOnce.current) {
+      refetchedOnce.current = true;
+      refetch();
+    }
+  }, [isPending, session, refetch]);
 
   useEffect(() => {
     if (!isPending && !session) {
-      router.push("/auth/login");
+      // Brief delay so refetch (after OAuth redirect) can complete before redirecting to login
+      const id = setTimeout(() => router.push("/auth/login"), 600);
+      return () => clearTimeout(id);
     }
   }, [session, isPending, router]);
   

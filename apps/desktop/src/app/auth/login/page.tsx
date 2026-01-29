@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { signIn } from "@/lib/better-auth";
-import { initiateSocialSignIn } from "@/lib/oauth";
+import { initiateSocialSignIn, getFullCallbackURL } from "@/lib/oauth";
 import { Button, Input, Label, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@clipsync/ui";
 
 export default function LoginPage() {
@@ -18,7 +18,7 @@ export default function LoginPage() {
       await signIn.email({
         email,
         password,
-        callbackURL: "/",
+        callbackURL: getFullCallbackURL("/"),
       });
     } catch (error) {
       console.error("Login error:", error);
@@ -31,7 +31,7 @@ export default function LoginPage() {
     try {
       setIsLoading(true);
       // Use explicit OAuth URL redirect for better control
-      await initiateSocialSignIn("google", "/");
+      await initiateSocialSignIn("google");
     } catch (error: any) {
       console.error("Google sign in error:", error);
       alert("Google sign in failed. Please check your Google OAuth configuration.");
@@ -43,7 +43,7 @@ export default function LoginPage() {
     try {
       setIsLoading(true);
       // Use explicit OAuth URL redirect for better control
-      await initiateSocialSignIn("github", "/");
+      await initiateSocialSignIn("github");
     } catch (error: any) {
       console.error("GitHub sign in error:", error);
       alert("GitHub sign in failed. Please check your GitHub OAuth configuration.");

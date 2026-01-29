@@ -2,11 +2,18 @@
 const path = require('path');
 const { config } = require('dotenv');
 
-// Load environment variables from root .env file
+const root = path.resolve(__dirname, '../..');
+
+// Load root .env first
 try {
-  config({ path: path.resolve(__dirname, '../../.env') });
-} catch (e) {
-  // .env file doesn't exist, that's okay
+  config({ path: path.join(root, '.env') });
+} catch (e) {}
+
+// USE_PROD_ENV=1 → load .env.prod (Railway auth + API). Run: pnpm electron:dev:prod
+if (process.env.USE_PROD_ENV === '1') {
+  try {
+    config({ path: path.join(root, '.env.prod'), override: true });
+  } catch (e) {}
 }
 
 const nextConfig = {
@@ -15,21 +22,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Skip type checking and linting during build
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  // Don't open browser automatically (for Electron)
-  // This prevents Next.js from opening browser when running electron:dev
-  // Browser will be opened by Electron instead
-  // Pass env vars to Next.js (only what's needed for client)
+  typescript: { ignoreBuildErrors: true },
+  eslint: { ignoreDuringBuilds: true },
   env: {
-    // Auth service URL (used by better-auth client)
     NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3001",
-    // API URL for backend
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   },
 }
