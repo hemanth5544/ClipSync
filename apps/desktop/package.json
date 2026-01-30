@@ -2,6 +2,8 @@
   "name": "@clipsync/desktop",
   "version": "1.0.0",
   "private": true,
+  "author": "ClipSync",
+  "description": "ClipSync desktop app (Electron + Next). Part of monorepo — install from repo root: pnpm install.",
   "main": "electron/main.js",
   "scripts": {
     "dev": "next dev",
@@ -17,7 +19,7 @@
     "electron:dev:prod": "concurrently \"USE_PROD_ENV=1 BROWSER=none pnpm dev\" \"wait-on http://localhost:3000 && electron .\"",
     "electron:dev:network": "concurrently \"pnpm dev:network\" \"wait-on http://localhost:3000 && electron .\"",
     "electron:build:ts": "tsc electron/main.ts electron/preload.ts --outDir electron --target es2020 --module commonjs --esModuleInterop --skipLibCheck --resolveJsonModule",
-    "electron:build": "pnpm build && pnpm electron:build:ts && electron-builder",
+    "electron:build": "OUTPUT=export pnpm build && pnpm electron:build:ts && electron-builder",
     "electron:build:win": "pnpm electron:build -- --win",
     "electron:build:mac": "pnpm electron:build -- --mac",
     "electron:build:linux": "pnpm electron:build -- --linux",

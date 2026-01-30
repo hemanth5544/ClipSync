@@ -37,17 +37,29 @@ const electron_1 = require("electron");
 const electron_updater_1 = require("electron-updater");
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
-const dotenv_1 = require("dotenv");
-// Load environment variables from .env file (for Electron)
-// In production, env vars should be set by the system or bundled
-const envPath = path.resolve(__dirname, '../../.env');
-(0, dotenv_1.config)({ path: envPath });
+const fs = __importStar(require("fs"));
+const url_1 = require("url");
+// Custom protocol so /_next/static/... loads correctly (file:// would resolve to filesystem root).
+electron_1.protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true } }]);
+// Only load dotenv in development (unpackaged). Packaged app does not include dotenv.
+const isPackaged = electron_1.app.isPackaged;
+if (!isPackaged) {
+    try {
+        require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+    }
+    catch {
+        // dotenv optional in dev
+    }
+}
 let mainWindow = null;
 let tray = null;
 let lastClipboardContent = '';
 let clipboardCheckInterval = null;
 let isQuitting = false;
-const isDev = process.env.NODE_ENV === 'development' || !electron_1.app.isPackaged;
+const isDev = process.env.NODE_ENV === 'development' || !isPackaged;
+function getOutDir() {
+    return path.join(__dirname, '..', 'out');
+}
 function createWindow() {
     mainWindow = new electron_1.BrowserWindow({
         width: 1200,
@@ -60,12 +72,14 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
             contextIsolation: true,
+            // CSP warning in dev (unsafe-eval from Next.js Fast Refresh) goes away when packaged.
+            // See https://electronjs.org/docs/tutorial/security
         },
         show: false,
     });
     const startUrl = isDev
         ? 'http://localhost:3000'
-        : `file://${path.join(__dirname, '../out/index.html')}`;
+        : 'app://./index.html';
     mainWindow.loadURL(startUrl);
     if (isDev) {
         mainWindow.webContents.openDevTools();
@@ -79,13 +93,10 @@ function createWindow() {
             mainWindow?.hide();
         }
     });
-
     // Show window when ready
     mainWindow.once('ready-to-show', () => {
-        if (mainWindow) {
-            mainWindow.show();
-            mainWindow.focus();
-        }
+        mainWindow?.show();
+        mainWindow?.focus();
     });
 }
 function createTray() {
@@ -183,13 +194,45 @@ function registerGlobalShortcut() {
     }
 }
 electron_1.app.whenReady().then(() => {
+    // Serve exported Next.js app via app:// so /_next/static/... resolves correctly
+    if (!isDev) {
+        const outDir = getOutDir();
+        electron_1.protocol.handle('app', (request) => {
+            let urlPath;
+            try {
+                urlPath = new URL(request.url).pathname;
+            }
+            catch {
+                return Response.error();
+            }
+            if (urlPath === '/' || urlPath === '')
+                urlPath = '/index.html';
+            const decoded = decodeURIComponent(urlPath).replace(/^\/+/, '');
+            let filePath = path.join(outDir, decoded);
+            const outResolved = path.resolve(outDir);
+            let resolved = path.resolve(filePath);
+            if (!resolved.startsWith(outResolved)) {
+                return new Response(null, { status: 403 });
+            }
+            // Next.js static export uses .html files (e.g. auth/login.html for /auth/login)
+            if (!fs.existsSync(resolved) && !decoded.endsWith('.html') && !path.extname(decoded)) {
+                const withHtml = path.join(outDir, decoded + '.html');
+                if (fs.existsSync(withHtml)) {
+                    resolved = path.resolve(withHtml);
+                }
+            }
+            const fileUrl = (0, url_1.pathToFileURL)(resolved).href;
+            return electron_1.net.fetch(fileUrl);
+        });
+    }
     createWindow();
     createTray();
     startClipboardMonitoring();
     registerGlobalShortcut();
-    // Auto-updater (only in production)
-    if (!isDev) {
-        electron_updater_1.autoUpdater.checkForUpdatesAndNotify();
+    // Auto-updater disabled for local builds. Enable when you have a release server (e.g. GitHub releases).
+    // Set ENABLE_UPDATES=1 when publishing and app-update.yml points to a real URL.
+    if (!isDev && process.env.ENABLE_UPDATES === '1') {
+        electron_updater_1.autoUpdater.checkForUpdatesAndNotify().catch(() => { });
     }
 });
 electron_1.app.on('window-all-closed', () => {

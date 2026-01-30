@@ -1,13 +1,22 @@
-import { app, BrowserWindow, Tray, Menu, globalShortcut, clipboard, ipcMain, nativeImage } from 'electron';
+import { app, BrowserWindow, Tray, Menu, globalShortcut, clipboard, ipcMain, nativeImage, protocol, net } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import * as path from 'path';
 import * as os from 'os';
-import { config } from 'dotenv';
+import * as fs from 'fs';
+import { pathToFileURL } from 'url';
 
-// Load environment variables from .env file (for Electron)
-// In production, env vars should be set by the system or bundled
-const envPath = path.resolve(__dirname, '../../.env');
-config({ path: envPath });
+// Custom protocol so /_next/static/... loads correctly (file:// would resolve to filesystem root).
+protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true } }]);
+
+// Only load dotenv in development (unpackaged). Packaged app does not include dotenv.
+const isPackaged = app.isPackaged;
+if (!isPackaged) {
+  try {
+    require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+  } catch {
+    // dotenv optional in dev
+  }
+}
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -15,7 +24,11 @@ let lastClipboardContent = '';
 let clipboardCheckInterval: NodeJS.Timeout | null = null;
 let isQuitting = false;
 
-const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+const isDev = process.env.NODE_ENV === 'development' || !isPackaged;
+
+function getOutDir(): string {
+  return path.join(__dirname, '..', 'out');
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -37,7 +50,7 @@ function createWindow() {
 
   const startUrl = isDev
     ? 'http://localhost:3000'
-    : `file://${path.join(__dirname, '../out/index.html')}`;
+    : 'app://./index.html';
 
   mainWindow.loadURL(startUrl);
 
@@ -163,14 +176,45 @@ function registerGlobalShortcut() {
 }
 
 app.whenReady().then(() => {
+  // Serve exported Next.js app via app:// so /_next/static/... resolves correctly
+  if (!isDev) {
+    const outDir = getOutDir();
+    protocol.handle('app', (request) => {
+      let urlPath: string;
+      try {
+        urlPath = new URL(request.url).pathname;
+      } catch {
+        return Response.error();
+      }
+      if (urlPath === '/' || urlPath === '') urlPath = '/index.html';
+      const decoded = decodeURIComponent(urlPath).replace(/^\/+/, '');
+      let filePath = path.join(outDir, decoded);
+      const outResolved = path.resolve(outDir);
+      let resolved = path.resolve(filePath);
+      if (!resolved.startsWith(outResolved)) {
+        return new Response(null, { status: 403 });
+      }
+      // Next.js static export uses .html files (e.g. auth/login.html for /auth/login)
+      if (!fs.existsSync(resolved) && !decoded.endsWith('.html') && !path.extname(decoded)) {
+        const withHtml = path.join(outDir, decoded + '.html');
+        if (fs.existsSync(withHtml)) {
+          resolved = path.resolve(withHtml);
+        }
+      }
+      const fileUrl = pathToFileURL(resolved).href;
+      return net.fetch(fileUrl);
+    });
+  }
+
   createWindow();
   createTray();
   startClipboardMonitoring();
   registerGlobalShortcut();
 
-  // Auto-updater (only in production)
-  if (!isDev) {
-    autoUpdater.checkForUpdatesAndNotify();
+  // Auto-updater disabled for local builds. Enable when you have a release server (e.g. GitHub releases).
+  // Set ENABLE_UPDATES=1 when publishing and app-update.yml points to a real URL.
+  if (!isDev && process.env.ENABLE_UPDATES === '1') {
+    autoUpdater.checkForUpdatesAndNotify().catch(() => {});
   }
 });
 

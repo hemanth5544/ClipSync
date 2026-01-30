@@ -11,10 +11,10 @@ files:
   - node_modules/@clipsync/**
   - "!node_modules/**/*.{md,ts,map}"
 
-# Include .env.example (users will need to create their own .env)
-extraFiles:
-  - from: .env.example
-    to: .env.example
+# app-update.yml must be in resources/ so electron-updater does not throw ENOENT
+extraResources:
+  - from: app-update.yml
+    to: app-update.yml
 
 win:
   target: 

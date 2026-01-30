@@ -2,6 +2,7 @@
   "name": "clipsync",
   "version": "1.0.0",
   "private": true,
+  "description": "ClipSync monorepo — install from root with pnpm so all apps use workspace packages (@clipsync/types, @clipsync/ui, etc.).",
   "scripts": {
     "dev": "turbo run dev",
     
@@ -17,15 +18,7 @@
     "backend:build:railway": "cd apps/backend && go build -o bin/server ./cmd/server",
     "backend:start:railway": "cd apps/backend && ./bin/server",
     
-    "prisma:generate": "cd apps/auth && pnpm prisma:generate",
-    "prisma:db:push": "cd apps/auth && pnpm prisma:db:push",
-    "prisma:studio": "cd apps/auth && dotenv -e ../../.env -- npx prisma studio --schema=./prisma/schema.prisma",
-    "prisma:migrate": "cd apps/auth && dotenv -e ../../.env -- npx prisma migrate dev --schema=./prisma/schema.prisma",
-    
-    "auth:dev": "cd apps/auth && pnpm dev",
-    "auth:build": "cd apps/auth && pnpm build",
-    "auth:start": "cd apps/auth && pnpm start",
-    
+
     "desktop:dev": "cd apps/desktop && pnpm dev",
     "desktop:build": "cd apps/desktop && pnpm build",
     "electron:dev": "cd apps/desktop && pnpm electron:dev",

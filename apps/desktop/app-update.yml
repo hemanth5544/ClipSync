@@ -1,0 +1,4 @@
+# Generated/placeholder so electron-updater does not throw ENOENT.
+# Set provider and url when you have an update server (e.g. GitHub releases).
+provider: generic
+url: https://github.com/your-org/clipsync/releases/download/

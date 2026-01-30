@@ -41,8 +41,16 @@ export default function Sidebar() {
   }, [session]);
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push("/auth/login");
+    try {
+      await signOut();
+    } catch (e) {
+      console.warn("Sign out request failed:", e);
+    }
+    if (typeof window !== "undefined") {
+      window.location.href = "/auth/login";
+    } else {
+      router.push("/auth/login");
+    }
   };
 
   return (

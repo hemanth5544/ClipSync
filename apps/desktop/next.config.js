@@ -16,8 +16,10 @@ if (process.env.USE_PROD_ENV === '1') {
   } catch (e) {}
 }
 
+// Electron build needs static export (out/index.html). Railway/deploy uses standalone.
+// (file:// would break /_next/... paths; Electron main uses custom protocol 'app://' to serve out/.)
 const nextConfig = {
-  output: 'standalone',
+  output: process.env.OUTPUT === 'export' ? 'export' : 'standalone',
   reactStrictMode: true,
   images: {
     unoptimized: true,
