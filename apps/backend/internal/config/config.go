@@ -33,7 +33,7 @@ func Load() error {
 
 	// Parse allowed origins from environment variable (comma-separated)
 	// Default includes localhost and common development URLs
-	originsEnv := getEnv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001,http://192.168.1.7:3000")
+	originsEnv := getEnv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001,http://192.168.1.7:3000,http://locahost:8081")
 	origins := []string{}
 	for _, origin := range splitString(originsEnv, ",") {
 		if trimmed := strings.TrimSpace(origin); trimmed != "" {
