@@ -3,8 +3,6 @@ package api
 import (
 	"clipsync/backend/internal/api/handlers"
 	"clipsync/backend/internal/api/middleware"
-	"clipsync/backend/internal/config"
-	"strings"
 
 	"gorm.io/gorm"
 
@@ -15,28 +13,10 @@ import (
 func InitializeRouter(db *gorm.DB) *gin.Engine {
 	router := gin.Default()
 
-	// Get allowed origins from config
-	allowedOrigins := config.Get().AllowedOrigins
-	if len(allowedOrigins) == 0 {
-		// Fallback to default if not configured
-		allowedOrigins = []string{"http://localhost:3000", "http://localhost:3001", "http://192.168.1.7:3000"}
-	}
-
-	originSet := make(map[string]bool)
-	for _, o := range allowedOrigins {
-		originSet[strings.TrimSpace(o)] = true
-	}
-
+	// Allow all origins (for dev / flexible clients; tighten in production if needed)
 	router.Use(cors.New(cors.Config{
 		AllowOriginFunc: func(origin string) bool {
-			if originSet[origin] {
-				return true
-			}
-			// Packaged Electron app uses app:// protocol
-			if strings.HasPrefix(origin, "app://") {
-				return true
-			}
-			return false
+			return true
 		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "X-Requested-With"},
