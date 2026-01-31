@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Clipboard, Menu, X } from 'lucide-react'
 import { Button } from '@clipsync/ui'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 const navLinks = [
   { href: '/#features', label: 'Features' },
@@ -30,17 +31,24 @@ export function Nav() {
       animate={{ y: 0 }}
       transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'glass border-b border-[var(--border)]' : 'bg-transparent'
+        scrolled ? 'pt-3 px-4 md:pt-4 md:px-6' : ''
       }`}
     >
-      <nav className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
+      <div
+        className={`transition-all duration-300 ease-out ${
+          scrolled
+            ? 'mx-auto max-w-4xl rounded-2xl border border-[var(--border)] shadow-lg dark:shadow-black/20 glass md:rounded-2xl'
+            : ''
+        }`}
+      >
+        <nav className="flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
         <Link
           href="/"
           className="flex items-center gap-2 text-lg font-semibold text-[var(--text-primary)] transition-opacity hover:opacity-90"
           aria-label="ClipSync Home"
         >
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--primary-from)] to-[var(--primary-to)]">
-            <Clipboard className="h-5 w-5 text-white" aria-hidden />
+            <Clipboard className="h-5 w-5 text-[var(--primary-foreground)]" aria-hidden />
           </div>
           <span className="font-display font-semibold">ClipSync</span>
         </Link>
@@ -58,10 +66,11 @@ export function Nav() {
         </div>
 
         <div className="hidden md:flex md:items-center md:gap-3">
+          <ThemeToggle />
           <Button variant="ghost" asChild>
             <Link href="/login">Login</Link>
           </Button>
-          <Button asChild className="bg-gradient-to-r from-[var(--primary-from)] to-[var(--primary-to)] text-white hover:opacity-90">
+          <Button asChild className="bg-gradient-to-r from-[var(--primary-from)] to-[var(--primary-to)] text-[var(--primary-foreground)] hover:opacity-90">
             <Link href="/signup">Get Started</Link>
           </Button>
         </div>
@@ -75,7 +84,8 @@ export function Nav() {
         >
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
-      </nav>
+        </nav>
+      </div>
 
       <AnimatePresence>
         {mobileOpen && (
@@ -84,9 +94,9 @@ export function Nav() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="glass border-t border-[var(--border)] md:hidden"
+            className={`md:hidden ${scrolled ? 'mx-4 mt-2 rounded-2xl border border-[var(--border)] glass' : 'glass border-t border-[var(--border)]'}`}
           >
-            <div className="container mx-auto flex flex-col gap-2 px-4 py-4">
+            <div className={`flex flex-col gap-2 px-4 py-4 ${scrolled ? 'mx-auto max-w-4xl' : 'container mx-auto'}`}>
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -98,10 +108,13 @@ export function Nav() {
                 </Link>
               ))}
               <div className="mt-2 flex flex-col gap-2 border-t border-[var(--border)] pt-4">
+                <div className="flex justify-center">
+                  <ThemeToggle />
+                </div>
                 <Button variant="ghost" asChild className="justify-center">
                   <Link href="/login">Login</Link>
                 </Button>
-                <Button asChild className="bg-gradient-to-r from-[var(--primary-from)] to-[var(--primary-to)] text-white">
+                <Button asChild className="bg-gradient-to-r from-[var(--primary-from)] to-[var(--primary-to)] text-[var(--primary-foreground)]">
                   <Link href="/signup">Get Started</Link>
                 </Button>
               </div>
