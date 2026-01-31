@@ -5,16 +5,36 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "@/lib/better-auth";
 import { Button } from "@clipsync/ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@clipsync/ui";
-import { Settings, LogOut, Home, Star, Smartphone } from "lucide-react";
+import { Settings, LogOut, Home, Star, Smartphone, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "./ThemeToggle";
 import { api } from "@/lib/api";
+
+const SIDEBAR_COLLAPSED_KEY = "clipsync-sidebar-collapsed";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
   const [clipStats, setClipStats] = useState({ total: 0, favorites: 0 });
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+      setCollapsed(stored === "true");
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(collapsed));
+    } catch {
+      // ignore
+    }
+  }, [collapsed]);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -54,85 +74,139 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-64 bg-card border-r border-border flex flex-col">
-      <div className="p-6 border-b border-border flex items-center justify-between">
-        <h1 className="text-2xl font-bold">ClipSync</h1>
+    <div
+      className={`${collapsed ? "w-16" : "w-64"} bg-card border-r border-border flex flex-col transition-[width] duration-200 ease-in-out shrink-0`}
+    >
+      <div className={`border-b border-border flex items-center gap-2 ${collapsed ? "p-2 justify-center" : "p-4 justify-between"}`}>
+        {collapsed ? (
+          <span className="text-lg font-bold" title="ClipSync">C</span>
+        ) : (
+          <h1 className="text-xl font-bold truncate">ClipSync</h1>
+        )}
         <ThemeToggle />
       </div>
-      <nav className="flex-1 p-4 space-y-2">
-        <Link href="/">
+      <nav className={`flex-1 space-y-1 ${collapsed ? "p-2" : "p-4"}`}>
+        <Link href="/" title={collapsed ? "All Clips" : undefined}>
           <Button
             variant={pathname === "/" ? "secondary" : "ghost"}
-            className="w-full justify-start"
+            className={`w-full ${collapsed ? "justify-center p-2" : "justify-start"}`}
           >
-            <Home className="mr-2 h-4 w-4" />
-            All Clips
-            {clipStats.total > 0 && (
-              <span className="ml-auto text-xs text-muted-foreground">
-                {clipStats.total}
-              </span>
+            <Home className={collapsed ? "h-4 w-4" : "mr-2 h-4 w-4"} />
+            {!collapsed && (
+              <>
+                All Clips
+                {clipStats.total > 0 && (
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {clipStats.total}
+                  </span>
+                )}
+              </>
             )}
           </Button>
         </Link>
-        <Link href="/favorites">
+        <Link href="/favorites" title={collapsed ? "Favorites" : undefined}>
           <Button
             variant={pathname === "/favorites" ? "secondary" : "ghost"}
-            className="w-full justify-start"
+            className={`w-full ${collapsed ? "justify-center p-2" : "justify-start"}`}
           >
-            <Star className={`mr-2 h-4 w-4 ${pathname === "/favorites" ? "text-yellow-500 fill-yellow-500" : ""}`} />
-            Favorites
-            {clipStats.favorites > 0 && (
-              <span className="ml-auto text-xs text-muted-foreground">
-                {clipStats.favorites}
-              </span>
+            <Star className={`${collapsed ? "h-4 w-4" : "mr-2 h-4 w-4"} ${pathname === "/favorites" ? "text-yellow-500 fill-yellow-500" : ""}`} />
+            {!collapsed && (
+              <>
+                Favorites
+                {clipStats.favorites > 0 && (
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {clipStats.favorites}
+                  </span>
+                )}
+              </>
             )}
           </Button>
         </Link>
-        <Link href="/devices">
+        <Link href="/devices" title={collapsed ? "Devices" : undefined}>
           <Button
             variant={pathname === "/devices" ? "secondary" : "ghost"}
-            className="w-full justify-start"
+            className={`w-full ${collapsed ? "justify-center p-2" : "justify-start"}`}
           >
-            <Smartphone className="mr-2 h-4 w-4" />
-            Devices
+            <Smartphone className={collapsed ? "h-4 w-4" : "mr-2 h-4 w-4"} />
+            {!collapsed && "Devices"}
           </Button>
         </Link>
-        <Link href="/settings">
+        <Link href="/settings" title={collapsed ? "Settings" : undefined}>
           <Button
             variant={pathname === "/settings" ? "secondary" : "ghost"}
-            className="w-full justify-start"
+            className={`w-full ${collapsed ? "justify-center p-2" : "justify-start"}`}
           >
-            <Settings className="mr-2 h-4 w-4" />
-            Settings
+            <Settings className={collapsed ? "h-4 w-4" : "mr-2 h-4 w-4"} />
+            {!collapsed && "Settings"}
           </Button>
         </Link>
-      </nav>
-      {session?.user && (
-        <div className="p-4 border-t border-border">
-          <div className="flex items-center gap-3 mb-3">
-            <Avatar>
-              <AvatarImage src={session.user.image || undefined} />
-              <AvatarFallback>
-                {session.user.name?.charAt(0).toUpperCase() || "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">
-                {session.user.name || "User"}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {session.user.email}
-              </p>
-            </div>
-          </div>
+        <div className={collapsed ? "pt-2" : "pt-4"}>
           <Button
             variant="ghost"
-            className="w-full justify-start hover:text-red-500 hover:bg-red-500/10"
-            onClick={handleSignOut}
+            size={collapsed ? "icon" : "default"}
+            className={`w-full ${collapsed ? "justify-center p-2" : "justify-start"}`}
+            onClick={() => setCollapsed((c) => !c)}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
+            {collapsed ? (
+              <PanelLeftOpen className="h-4 w-4" />
+            ) : (
+              <>
+                <PanelLeftClose className="mr-2 h-4 w-4" />
+                Collapse
+              </>
+            )}
           </Button>
+        </div>
+      </nav>
+      {session?.user && (
+        <div className={`border-t border-border ${collapsed ? "p-2" : "p-4"}`}>
+          {collapsed ? (
+            <div className="flex flex-col items-center gap-2">
+              <Avatar className="h-8 w-8" title={session.user.name || session.user.email || "User"}>
+                <AvatarImage src={session.user.image || undefined} />
+                <AvatarFallback className="text-xs">
+                  {session.user.name?.charAt(0).toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hover:text-red-500 hover:bg-red-500/10"
+                onClick={handleSignOut}
+                title="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-3 mb-3">
+                <Avatar>
+                  <AvatarImage src={session.user.image || undefined} />
+                  <AvatarFallback>
+                    {session.user.name?.charAt(0).toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">
+                    {session.user.name || "User"}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {session.user.email}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                className="w-full justify-start hover:text-red-500 hover:bg-red-500/10"
+                onClick={handleSignOut}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            </>
+          )}
         </div>
       )}
     </div>

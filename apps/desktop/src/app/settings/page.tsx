@@ -1,13 +1,32 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Switch, Label } from "@clipsync/ui";
 import Sidebar from "@/components/Sidebar";
+import AppHeader from "@/components/AppHeader";
+import SearchOverlay from "@/components/SearchOverlay";
+import { useToast } from "@clipsync/ui";
+import { Clip } from "@clipsync/types";
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
   const [autoStart, setAutoStart] = useState(false);
   const [syncInterval, setSyncInterval] = useState(300); // 5 minutes
   const [historyLimit, setHistoryLimit] = useState(1000);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOverlayOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   useEffect(() => {
     // Load settings from localStorage or Electron store
@@ -36,11 +55,32 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-full min-h-0 bg-background">
       <Sidebar />
-      <div className="flex-1 overflow-auto p-6">
-        <div className="max-w-3xl mx-auto space-y-6">
-          <h1 className="text-3xl font-bold">Settings</h1>
+      <div className="flex-1 flex flex-col min-h-0 min-w-0">
+        <AppHeader
+          searchQuery=""
+          onSearchClick={() => setSearchOverlayOpen(true)}
+          onClearSearch={() => {}}
+          showNewSnippet={false}
+          pageTitle="Settings"
+          shortcutHint
+        />
+        <SearchOverlay
+          open={searchOverlayOpen}
+          onOpenChange={setSearchOverlayOpen}
+          onSearchSubmit={() => setSearchOverlayOpen(false)}
+          onNavigate={(path) => { router.push(path); setSearchOverlayOpen(false); }}
+          onAddSnippet={() => setSearchOverlayOpen(false)}
+          onSelectClip={async (clip: Clip) => {
+            if (typeof window !== "undefined" && window.electronAPI) {
+              await window.electronAPI.setClipboard(clip.content);
+              toast({ title: "Copied", description: "Content copied to clipboard" });
+            }
+          }}
+        />
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6">
+          <div className="max-w-3xl mx-auto space-y-6">
           
           <Card>
             <CardHeader>
@@ -111,6 +151,7 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
         </div>
       </div>
     </div>

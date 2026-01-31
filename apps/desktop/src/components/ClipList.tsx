@@ -5,11 +5,11 @@ import { Clip } from "@clipsync/types";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@clipsync/ui";
 import { ToastAction } from "@clipsync/ui";
-import { Heart, Copy, Trash2, Clock, Monitor, ChevronDown, ChevronUp, Check, ExternalLink, Pin, Maximize2, Code, FileText } from "lucide-react";
+import { Heart, Copy, Trash2, Clock, Monitor, ChevronDown, ChevronUp, Check, ExternalLink, Pin, Maximize2, Code, FileText, List, LayoutGrid } from "lucide-react";
 import { Button } from "@clipsync/ui";
 import { useToast } from "@clipsync/ui";
 import { CLIP_SAVED_EVENT } from "@/hooks/useClipboard";
-import { formatRelativeTime } from "@/lib/timeUtils";
+import { formatRelativeTime, getDateGroup, type DateGroup } from "@/lib/timeUtils";
 import { isURL, normalizeURL, openURL } from "@/lib/urlUtils";
 import { analyzeContent } from "@/lib/contentUtils";
 import ClipPreviewModal from "./ClipPreviewModal";
@@ -29,6 +29,7 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [clipToPreview, setClipToPreview] = useState<Clip | null>(null);
   const [copiedClipId, setCopiedClipId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "compact">("list");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [deletedClips, setDeletedClips] = useState<Clip[]>([]); // For undo functionality cleanup
   const { toast } = useToast();
@@ -85,6 +86,11 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
           title: "Copied",
           description: "Content copied to clipboard",
         });
+        // Save to API so it appears in "latest copied" (Electron skips clipboard-changed when we set clipboard)
+        const deviceName = (await window.electronAPI.getDeviceInfo()).name;
+        const saved = await api.clips.create({ content, deviceName });
+        window.dispatchEvent(new CustomEvent(CLIP_SAVED_EVENT, { detail: saved }));
+        setClips((prev) => [saved, ...prev.filter((c) => c.id !== clipId)]);
       }
     } catch (error) {
       toast({
@@ -225,7 +231,7 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
     setPreviewModalOpen(true);
   };
 
-  if (loading) {
+  if (loading && clips.length === 0) {
     return <ClipSkeletonList count={5} />;
   }
 
@@ -265,10 +271,48 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
     return <EmptyState type="search" searchQuery={searchQuery} />;
   }
 
+  const groupOrder: DateGroup[] = ["Today", "Yesterday", "This week", "Older"];
+  const clipsByDate = groupOrder.reduce<Record<DateGroup, Clip[]>>(
+    (acc, group) => {
+      acc[group] = filteredClips.filter((c) => getDateGroup(c.copiedAt) === group);
+      return acc;
+    },
+    { Today: [], Yesterday: [], "This week": [], Older: [] }
+  );
+
   return (
     <>
-      <div className="grid gap-4">
-        {filteredClips.map((clip) => {
+      <div className="flex items-center justify-end gap-1 mb-4">
+        <Button
+          variant={viewMode === "list" ? "secondary" : "ghost"}
+          size="sm"
+          onClick={() => setViewMode("list")}
+          title="List view"
+        >
+          <List className="h-4 w-4 mr-1" />
+          List
+        </Button>
+        <Button
+          variant={viewMode === "compact" ? "secondary" : "ghost"}
+          size="sm"
+          onClick={() => setViewMode("compact")}
+          title="Compact view"
+        >
+          <LayoutGrid className="h-4 w-4 mr-1" />
+          Compact
+        </Button>
+      </div>
+      <div className="space-y-6">
+        {groupOrder.map((group) => {
+          const groupClips = clipsByDate[group];
+          if (groupClips.length === 0) return null;
+          return (
+            <section key={group}>
+              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-3 px-1">
+                {group}
+              </h2>
+              <div className={viewMode === "compact" ? "grid gap-2" : "grid gap-4"}>
+                {groupClips.map((clip) => {
           const isExpanded = expandedClips.has(clip.id);
           const isCopied = copiedClipId === clip.id;
           const shouldShowExpand = clip.content.length > 150;
@@ -278,29 +322,32 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
           return (
             <Card 
               key={clip.id} 
-              className={`hover:shadow-lg transition-all relative ${
-                isCopied ? "ring-2 ring-green-500 ring-offset-2" : ""
-              } ${clip.isPinned ? "border-l-4 border-l-primary" : ""}`}
+              className={`transition-all relative border hover:shadow-md hover:border-accent/50 ${
+                isCopied ? "ring-2 ring-green-500 ring-offset-2 shadow-md border-green-500/30" : ""
+              }               ${clip.isPinned ? "border-l-4 border-l-primary" : ""} ${
+                viewMode === "compact" ? "py-2 px-3" : ""
+              }`}
             >
               {clip.isPinned && (
-                <div className="absolute top-2 right-2">
+                <div className={viewMode === "compact" ? "absolute top-1.5 right-2" : "absolute top-2 right-2"}>
                   <Pin className="h-4 w-4 text-primary fill-primary" />
                 </div>
               )}
-              <CardHeader>
-                <div className="flex items-start justify-between gap-4">
+              <CardHeader className={viewMode === "compact" ? "p-0 pb-1" : ""}>
+                <div className={`flex items-start justify-between gap-4 ${viewMode === "compact" ? "items-center" : ""}`}>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className={`flex items-center gap-2 ${viewMode === "compact" ? "mb-0" : "mb-1"}`}>
                       {contentInfo.isCode && (
                         <Code className="h-3 w-3 text-muted-foreground" />
                       )}
                       {contentInfo.isFilePath && (
                         <FileText className="h-3 w-3 text-muted-foreground" />
                       )}
-                      <CardTitle className="text-base font-medium line-clamp-2">
-                        {clip.contentPreview || clip.content.substring(0, 100)}
+                      <CardTitle className={`font-medium ${viewMode === "compact" ? "text-sm line-clamp-1" : "text-base line-clamp-2"}`}>
+                        {clip.contentPreview || clip.content.substring(0, viewMode === "compact" ? 60 : 100)}
                       </CardTitle>
                     </div>
+                    {viewMode !== "compact" && (
                     <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                       <Clock className="h-3 w-3" />
                       <span>{formatRelativeTime(clip.copiedAt)}</span>
@@ -313,6 +360,7 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
                         </>
                       )}
                     </div>
+                    )}
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
                     <Button
@@ -349,8 +397,8 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleCopy(clip.content, clip.id)}
-                      className={isCopied ? "text-green-500" : ""}
-                      title="Copy to clipboard"
+                      className={isCopied ? "text-green-600 dark:text-green-400 bg-green-500/10" : ""}
+                      title={isCopied ? "Copied!" : "Copy to clipboard"}
                     >
                       {isCopied ? (
                         <Check className="h-4 w-4" />
@@ -369,7 +417,7 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className={viewMode === "compact" ? "p-0 pt-0" : ""}>
                 {isUrl ? (
                   <div className="flex items-center gap-2">
                     <a
@@ -408,11 +456,11 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
                     </p>
                   </div>
                 ) : (
-                  <p className={`text-sm text-muted-foreground ${isExpanded ? "" : "line-clamp-3"}`}>
+                  <p className={`text-sm text-muted-foreground ${isExpanded ? "" : viewMode === "compact" ? "line-clamp-1" : "line-clamp-3"}`}>
                     {clip.content}
                   </p>
                 )}
-                {shouldShowExpand && !contentInfo.isCode && (
+                {shouldShowExpand && !contentInfo.isCode && viewMode !== "compact" && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -432,7 +480,7 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
                     )}
                   </Button>
                 )}
-                {clip.tags && clip.tags.length > 0 && (
+                {clip.tags && clip.tags.length > 0 && viewMode !== "compact" && (
                   <div className="flex gap-2 mt-3 flex-wrap">
                     {clip.tags.map((tag, index) => (
                       <span
@@ -445,7 +493,7 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
                   </div>
                 )}
                 {/* Device name tag at bottom right corner */}
-                {clip.deviceName && (
+                {clip.deviceName && viewMode !== "compact" && (
                   <div className="flex justify-end mt-4">
                     <Badge 
                       className="inline-flex items-center gap-1 bg-orange-500 text-white hover:bg-orange-600 border-orange-600 max-w-[120px] truncate"
@@ -458,6 +506,10 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
                 )}
               </CardContent>
             </Card>
+          );
+        })}
+              </div>
+            </section>
           );
         })}
       </div>

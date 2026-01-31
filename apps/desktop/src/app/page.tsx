@@ -5,17 +5,27 @@ import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/better-auth";
 import ClipList from "@/components/ClipList";
 import Sidebar from "@/components/Sidebar";
-import SearchBar from "@/components/SearchBar";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
 import { useClipboard } from "@/hooks/useClipboard";
+import { api } from "@/lib/api";
+import { CLIP_SAVED_EVENT } from "@/hooks/useClipboard";
+import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Textarea } from "@clipsync/ui";
+import { useToast } from "@clipsync/ui";
+import { Plus } from "lucide-react";
+import SearchOverlay from "@/components/SearchOverlay";
+import AppHeader from "@/components/AppHeader";
+import { Clip } from "@clipsync/types";
 
 export default function Home() {
   const { data: session, isPending, refetch } = useSession();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [addSnippetOpen, setAddSnippetOpen] = useState(false);
+  const [newSnippetContent, setNewSnippetContent] = useState("");
+  const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
   const refetchedOnce = useRef(false);
+  const { toast } = useToast();
   useClipboard();
 
   // After OAuth redirect, cookie may be set but first get-session can run before it.
@@ -35,12 +45,12 @@ export default function Home() {
     }
   }, [session, isPending, router]);
   
-  //Keyboard shortcuts
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
-        searchInputRef.current?.focus();
+        setSearchOverlayOpen(true);
       }
       // ? to show shortcuts
       if (e.key === "?" && !e.ctrlKey && !e.metaKey) {
@@ -55,14 +65,11 @@ export default function Home() {
         e.preventDefault();
         router.push("/settings");
       }
-      if (e.key === "Escape" && searchQuery) {
-        setSearchQuery("");
-      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [searchQuery, router]);
+  }, [router]);
 
   if (isPending) {
     return (
@@ -78,27 +85,105 @@ export default function Home() {
 
 const isElectron = typeof window !== "undefined" && window.electronAPI;
 
+  const handleAddSnippet = async () => {
+    const content = newSnippetContent.trim();
+    if (!content) {
+      toast({ title: "Empty snippet", description: "Enter some text to save.", variant: "destructive" });
+      return;
+    }
+    try {
+      let deviceName = "Desktop";
+      if (window.electronAPI) {
+        const info = await window.electronAPI.getDeviceInfo();
+        deviceName = info.name;
+      }
+      const saved = await api.clips.create({ content, deviceName });
+      window.dispatchEvent(new CustomEvent(CLIP_SAVED_EVENT, { detail: saved }));
+      toast({ title: "Snippet saved", description: "Added to All Clips." });
+      setNewSnippetContent("");
+      setAddSnippetOpen(false);
+    } catch (error: unknown) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save snippet",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-full min-h-0 bg-background">
       <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <SearchBar 
-          searchQuery={searchQuery} 
-          onSearchChange={setSearchQuery}
-          inputRef={searchInputRef}
+      <div className="flex-1 flex flex-col min-h-0 min-w-0">
+        <AppHeader
+          searchQuery={searchQuery}
+          onSearchClick={() => setSearchOverlayOpen(true)}
+          onClearSearch={(e) => { e.stopPropagation(); setSearchQuery(""); }}
+          showNewSnippet
+          onNewSnippet={() => setAddSnippetOpen(true)}
+          shortcutHint
+        />
+
+        <SearchOverlay
+          open={searchOverlayOpen}
+          onOpenChange={setSearchOverlayOpen}
+          onSearchSubmit={(q) => {
+            setSearchQuery(q);
+            setSearchOverlayOpen(false);
+          }}
+          onNavigate={(path) => {
+            router.push(path);
+            setSearchOverlayOpen(false);
+          }}
+          onAddSnippet={() => {
+            setAddSnippetOpen(true);
+            setSearchOverlayOpen(false);
+          }}
+          onSelectClip={async (clip: Clip) => {
+            if (typeof window !== "undefined" && window.electronAPI) {
+              await window.electronAPI.setClipboard(clip.content);
+              toast({ title: "Copied", description: "Content copied to clipboard" });
+            }
+          }}
         />
         {!isElectron && (
-          <div className="p-4 bg-yellow-500/10 border-b border-yellow-500/20">
+          <div className="p-4 bg-yellow-500/10 border-b border-yellow-500/20 flex-shrink-0">
             <p className="text-sm text-yellow-600 dark:text-yellow-400">
               ⚠️ Clipboard monitoring only works in Electron. Run: <code className="bg-black/10 px-1 rounded">pnpm electron:dev</code>
             </p>
           </div>
         )}
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6">
           <ClipList searchQuery={searchQuery} />
         </main>
       </div>
       <KeyboardShortcuts open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+
+      <Dialog open={addSnippetOpen} onOpenChange={setAddSnippetOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add new snippet</DialogTitle>
+            <DialogDescription>
+              Paste or type text to save as a new clip. It will appear in your latest copied list.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder="Paste or type your snippet here..."
+            value={newSnippetContent}
+            onChange={(e) => setNewSnippetContent(e.target.value)}
+            className="min-h-[160px] resize-y"
+            autoFocus
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setAddSnippetOpen(false); setNewSnippetContent(""); }}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddSnippet} disabled={!newSnippetContent.trim()}>
+              Save snippet
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
