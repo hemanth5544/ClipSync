@@ -60,6 +60,20 @@ func RunMigrations(db *gorm.DB) error {
 		return err
 	}
 	log.Println("PairingCode table migrated successfully")
+
+	log.Println("Migrating UserVault table...")
+	if err := db.AutoMigrate(&models.UserVault{}); err != nil {
+		log.Printf("Error migrating UserVault: %v", err)
+		return err
+	}
+	log.Println("UserVault table migrated successfully")
+
+	log.Println("Migrating SecureClip table...")
+	if err := db.AutoMigrate(&models.SecureClip{}); err != nil {
+		log.Printf("Error migrating SecureClip: %v", err)
+		return err
+	}
+	log.Println("SecureClip table migrated successfully")
 	
 	log.Println("All migrations completed successfully!")
 	return nil
