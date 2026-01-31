@@ -270,3 +270,15 @@ electron_1.ipcMain.handle('get-device-info', () => {
 electron_1.ipcMain.handle('get-app-version', () => {
     return electron_1.app.getVersion();
 });
+electron_1.ipcMain.handle('show-notification', (_event, title, body) => {
+    if (electron_1.Notification.isSupported()) {
+        const n = new electron_1.Notification({ title, body });
+        n.on('click', () => {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.show();
+                mainWindow.focus();
+            }
+        });
+        n.show();
+    }
+});

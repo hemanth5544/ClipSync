@@ -16,6 +16,7 @@ export default function SettingsPage() {
   const [autoStart, setAutoStart] = useState(false);
   const [syncInterval, setSyncInterval] = useState(300); // 5 minutes
   const [historyLimit, setHistoryLimit] = useState(1000);
+  const [notifyRemoteClips, setNotifyRemoteClips] = useState(true);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -33,7 +34,9 @@ export default function SettingsPage() {
     const savedAutoStart = localStorage.getItem("autoStart") === "true";
     const savedSyncInterval = parseInt(localStorage.getItem("syncInterval") || "300");
     const savedHistoryLimit = parseInt(localStorage.getItem("historyLimit") || "1000");
-    
+    const savedNotifyRemote = localStorage.getItem("notifyRemoteClips");
+    setNotifyRemoteClips(savedNotifyRemote === null ? true : savedNotifyRemote !== "false");
+
     setAutoStart(savedAutoStart);
     setSyncInterval(savedSyncInterval);
     setHistoryLimit(savedHistoryLimit);
@@ -52,6 +55,11 @@ export default function SettingsPage() {
   const handleHistoryLimitChange = (value: number) => {
     setHistoryLimit(value);
     localStorage.setItem("historyLimit", value.toString());
+  };
+
+  const handleNotifyRemoteClipsChange = (checked: boolean) => {
+    setNotifyRemoteClips(checked);
+    localStorage.setItem("notifyRemoteClips", checked ? "true" : "false");
   };
 
   return (
@@ -99,6 +107,19 @@ export default function SettingsPage() {
                   id="auto-start"
                   checked={autoStart}
                   onCheckedChange={handleAutoStartChange}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="notify-remote">Notify when synced from other device</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Show a push notification when new clipboard content arrives from another device
+                  </p>
+                </div>
+                <Switch
+                  id="notify-remote"
+                  checked={notifyRemoteClips}
+                  onCheckedChange={handleNotifyRemoteClipsChange}
                 />
               </div>
             </CardContent>

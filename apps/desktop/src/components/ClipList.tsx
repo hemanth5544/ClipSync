@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { Clip } from "@clipsync/types";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@clipsync/ui";
@@ -33,6 +33,21 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [deletedClips, setDeletedClips] = useState<Clip[]>([]); // For undo functionality cleanup
   const { toast } = useToast();
+  const seenClipIdsRef = useRef<Set<string>>(new Set());
+  const initialLoadDoneRef = useRef(false);
+  const currentDeviceNameRef = useRef<string | null>(null);
+
+  const notifyRemoteClip = async (clip: Clip) => {
+    const enabled = localStorage.getItem("notifyRemoteClips") !== "false"; // default true
+    if (!enabled || !window.electronAPI?.showNotification) return;
+    const deviceName = clip.deviceName || "Another device";
+    const preview = clip.contentPreview?.slice(0, 60) || clip.content?.slice(0, 60) || "";
+    const body = preview.length >= 60 ? `${preview}...` : preview;
+    await window.electronAPI.showNotification(
+      `Clipboard from ${deviceName}`,
+      body || "New content copied"
+    );
+  };
 
   useEffect(() => {
     loadClips();
@@ -62,7 +77,32 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
     try {
       setLoading(true);
       const response = await api.clips.getAll({ pageSize: 50 });
-      setClips(response.data);
+      const newClips = response.data;
+      setClips(newClips);
+
+      if (window.electronAPI) {
+        if (!currentDeviceNameRef.current) {
+          const info = await window.electronAPI.getDeviceInfo();
+          currentDeviceNameRef.current = info.name;
+        }
+        const currentDevice = currentDeviceNameRef.current;
+
+        if (!initialLoadDoneRef.current) {
+          newClips.forEach((c) => seenClipIdsRef.current.add(c.id));
+          initialLoadDoneRef.current = true;
+        } else {
+          for (const clip of newClips) {
+            if (seenClipIdsRef.current.has(clip.id)) continue;
+            seenClipIdsRef.current.add(clip.id);
+            const fromOtherDevice =
+              clip.deviceName && clip.deviceName !== currentDevice;
+            if (fromOtherDevice) {
+              notifyRemoteClip(clip);
+            }
+          }
+        }
+      }
+
       console.log("Loaded clips:", response.data.length);
     } catch (error: any) {
       console.error("Failed to load clips:", error);

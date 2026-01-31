@@ -8,6 +8,7 @@ electron_1.contextBridge.exposeInMainWorld('electronAPI', {
     setClipboard: (text) => electron_1.ipcRenderer.invoke('set-clipboard', text),
     getDeviceInfo: () => electron_1.ipcRenderer.invoke('get-device-info'),
     getAppVersion: () => electron_1.ipcRenderer.invoke('get-app-version'),
+    showNotification: (title, body) => electron_1.ipcRenderer.invoke('show-notification', title, body),
     onClipboardChanged: (callback) => {
         electron_1.ipcRenderer.on('clipboard-changed', (_event, data) => callback(data));
     },

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, Menu, globalShortcut, clipboard, ipcMain, nativeImage, protocol, net } from 'electron';
+import { app, BrowserWindow, Tray, Menu, globalShortcut, clipboard, ipcMain, nativeImage, protocol, net, Notification } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import * as path from 'path';
 import * as os from 'os';
@@ -258,4 +258,17 @@ ipcMain.handle('get-device-info', () => {
 
 ipcMain.handle('get-app-version', () => {
   return app.getVersion();
+});
+
+ipcMain.handle('show-notification', (_event, title: string, body: string) => {
+  if (Notification.isSupported()) {
+    const n = new Notification({ title, body });
+    n.on('click', () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.show();
+        mainWindow.focus();
+      }
+    });
+    n.show();
+  }
 });
