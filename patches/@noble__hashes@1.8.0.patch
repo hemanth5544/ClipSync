@@ -1,0 +1,19 @@
+diff --git a/package.json b/package.json
+index 4d2fc73b40c26ffdb4f6a2e3cb59520f608ded4f..926c170d2309edf7a0d16b8cc0cbbb61597f5988 100644
+--- a/package.json
++++ b/package.json
+@@ -59,6 +59,14 @@
+       "import": "./esm/crypto.js",
+       "default": "./crypto.js"
+     },
++    "./crypto.js": {
++      "node": {
++        "import": "./esm/cryptoNode.js",
++        "default": "./cryptoNode.js"
++      },
++      "import": "./esm/crypto.js",
++      "default": "./crypto.js"
++    },
+     "./_assert": {
+       "import": "./esm/_assert.js",
+       "require": "./_assert.js"

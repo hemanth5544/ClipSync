@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PairingScreen from "../screens/PairingScreen";
 import HomeScreen from "../screens/HomeScreen";
 import FavoritesScreen from "../screens/FavoritesScreen";
+import SecureScreen from "../screens/SecureScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -59,6 +60,15 @@ function TabNavigator() {
               size={size}
               color={focused ? "#FFD700" : color}
             />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Secure"
+        component={SecureScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="shield-checkmark" size={size} color={color} />
           ),
         }}
       />
