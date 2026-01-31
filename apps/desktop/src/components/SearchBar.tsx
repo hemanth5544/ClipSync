@@ -9,11 +9,13 @@ interface SearchBarProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   inputRef?: RefObject<HTMLInputElement>;
+  /** When true, no outer padding/border (e.g. when used in a row with other controls) */
+  compact?: boolean;
 }
 
-export default function SearchBar({ searchQuery, onSearchChange, inputRef }: SearchBarProps) {
+export default function SearchBar({ searchQuery, onSearchChange, inputRef, compact }: SearchBarProps) {
   return (
-    <div className="p-4 border-b border-border">
+    <div className={compact ? "flex-1 min-w-0" : "p-4 border-b border-border"}>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input

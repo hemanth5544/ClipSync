@@ -1,3 +1,19 @@
+export type DateGroup = "Today" | "Yesterday" | "This week" | "Older";
+
+export function getDateGroup(date: Date | string): DateGroup {
+  const now = new Date();
+  const d = typeof date === "string" ? new Date(date) : date;
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfYesterday = new Date(startOfToday);
+  startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+  const startOfWeek = new Date(startOfToday);
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+  const clipDay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  if (clipDay >= startOfToday.getTime()) return "Today";
+  if (clipDay >= startOfYesterday.getTime()) return "Yesterday";
+  if (d.getTime() >= startOfWeek.getTime()) return "This week";
+  return "Older";
+}
 
 export function formatRelativeTime(date: Date | string): string {
   const now = new Date();

@@ -1,21 +1,27 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Clip } from "@clipsync/types";
 import { api } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@clipsync/ui";
+import { Card, CardContent, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Button, Textarea } from "@clipsync/ui";
 import { Heart, Copy, Trash2, Clock, Monitor, ChevronDown, ChevronUp, Check, ExternalLink } from "lucide-react";
-import { Button } from "@clipsync/ui";
 import { useToast } from "@clipsync/ui";
 import Sidebar from "@/components/Sidebar";
-import SearchBar from "@/components/SearchBar";
+import AppHeader from "@/components/AppHeader";
+import SearchOverlay from "@/components/SearchOverlay";
 import { formatRelativeTime } from "@/lib/timeUtils";
 import { isURL, normalizeURL, openURL } from "@/lib/urlUtils";
+import { CLIP_SAVED_EVENT } from "@/hooks/useClipboard";
 
 export default function FavoritesPage() {
+  const router = useRouter();
   const [clips, setClips] = useState<Clip[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
+  const [addSnippetOpen, setAddSnippetOpen] = useState(false);
+  const [newSnippetContent, setNewSnippetContent] = useState("");
   const [expandedClips, setExpandedClips] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clipToDelete, setClipToDelete] = useState<Clip | null>(null);
@@ -23,9 +29,49 @@ export default function FavoritesPage() {
   const { toast } = useToast();
 
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOverlayOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
     loadFavorites();
+    const onClipSaved = () => loadFavorites();
+    window.addEventListener(CLIP_SAVED_EVENT, onClipSaved);
+    return () => window.removeEventListener(CLIP_SAVED_EVENT, onClipSaved);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleAddSnippet = async () => {
+    const content = newSnippetContent.trim();
+    if (!content) {
+      toast({ title: "Empty snippet", description: "Enter some text to save.", variant: "destructive" });
+      return;
+    }
+    try {
+      let deviceName = "Desktop";
+      if (typeof window !== "undefined" && window.electronAPI) {
+        const info = await window.electronAPI.getDeviceInfo();
+        deviceName = info.name;
+      }
+      const saved = await api.clips.create({ content, deviceName });
+      window.dispatchEvent(new CustomEvent(CLIP_SAVED_EVENT, { detail: saved }));
+      toast({ title: "Snippet saved", description: "Added to All Clips." });
+      setNewSnippetContent("");
+      setAddSnippetOpen(false);
+    } catch (error: unknown) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save snippet",
+        variant: "destructive",
+      });
+    }
+  };
 
   const loadFavorites = async () => {
     try {
@@ -113,59 +159,27 @@ export default function FavoritesPage() {
     });
   }, [clips, searchQuery]);
 
-  if (loading) {
-    return (
-      <div className="flex h-screen bg-background">
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
+  const mainContent = loading ? (
+    <div className="flex-1 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>
+  ) : clips.length === 0 ? (
+    <div className="flex-1 flex items-center justify-center text-muted-foreground">
+      <div className="text-center">
+        <Heart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <p className="text-lg">No favorite clips yet</p>
+        <p className="text-sm">Mark clips as favorites to see them here</p>
       </div>
-    );
-  }
-
-  if (clips.length === 0) {
-    return (
-      <div className="flex h-screen bg-background">
-        <Sidebar />
-        <div className="flex-1 flex flex-col">
-          <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">
-            <div className="text-center">
-              <Heart className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg">No favorite clips yet</p>
-              <p className="text-sm">Mark clips as favorites to see them here</p>
-            </div>
-          </div>
-        </div>
+    </div>
+  ) : filteredClips.length === 0 && searchQuery ? (
+    <div className="flex-1 flex items-center justify-center text-muted-foreground">
+      <div className="text-center">
+        <p className="text-lg">No favorites found</p>
+        <p className="text-sm">Try a different search term</p>
       </div>
-    );
-  }
-
-  if (filteredClips.length === 0 && searchQuery) {
-    return (
-      <div className="flex h-screen bg-background">
-        <Sidebar />
-        <div className="flex-1 flex flex-col">
-          <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">
-            <div className="text-center">
-              <p className="text-lg">No favorites found</p>
-              <p className="text-sm">Try a different search term</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <div className="flex h-screen bg-background">
-        <Sidebar />
-        <div className="flex-1 flex flex-col">
-          <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-          <main className="flex-1 overflow-auto p-6">
+    </div>
+  ) : (
+    <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6">
             <div className="grid gap-4">
               {filteredClips.map((clip) => {
                 const isExpanded = expandedClips.has(clip.id);
@@ -279,7 +293,37 @@ export default function FavoritesPage() {
                 );
               })}
             </div>
-          </main>
+    </main>
+  );
+
+  return (
+    <>
+      <div className="flex h-full min-h-0 bg-background">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-h-0 min-w-0">
+          <AppHeader
+            searchQuery={searchQuery}
+            onSearchClick={() => setSearchOverlayOpen(true)}
+            onClearSearch={(e) => { e.stopPropagation(); setSearchQuery(""); }}
+            showNewSnippet
+            onNewSnippet={() => setAddSnippetOpen(true)}
+            pageTitle="Favorites"
+            shortcutHint
+          />
+          <SearchOverlay
+            open={searchOverlayOpen}
+            onOpenChange={setSearchOverlayOpen}
+            onSearchSubmit={(q) => { setSearchQuery(q); setSearchOverlayOpen(false); }}
+            onNavigate={(path) => { router.push(path); setSearchOverlayOpen(false); }}
+            onAddSnippet={() => { setAddSnippetOpen(true); setSearchOverlayOpen(false); }}
+            onSelectClip={async (clip: Clip) => {
+              if (typeof window !== "undefined" && window.electronAPI) {
+                await window.electronAPI.setClipboard(clip.content);
+                toast({ title: "Copied", description: "Content copied to clipboard" });
+              }
+            }}
+          />
+          {mainContent}
         </div>
       </div>
 
@@ -314,6 +358,32 @@ export default function FavoritesPage() {
               onClick={handleDeleteConfirm}
             >
               Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={addSnippetOpen} onOpenChange={setAddSnippetOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add new snippet</DialogTitle>
+            <DialogDescription>
+              Paste or type text to save as a new clip. It will appear in your latest copied list.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder="Paste or type your snippet here..."
+            value={newSnippetContent}
+            onChange={(e) => setNewSnippetContent(e.target.value)}
+            className="min-h-[160px] resize-y"
+            autoFocus
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setAddSnippetOpen(false); setNewSnippetContent(""); }}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddSnippet} disabled={!newSnippetContent.trim()}>
+              Save snippet
             </Button>
           </DialogFooter>
         </DialogContent>
