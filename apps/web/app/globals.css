@@ -32,12 +32,20 @@
     --ease-out: cubic-bezier(0, 0, 0.2, 1);
   }
 
+  /* Dark mode: black & silver */
   .dark {
-    --background: #0f0a1a;
-    --surface: #1e1b4b;
-    --border: #312e81;
-    --text-primary: #f5f3ff;
-    --text-secondary: #a5b4fc;
+    --background: #0a0a0a;
+    --surface: #141414;
+    --surface-elevated: #1a1a1a;
+    --border: #2a2a2a;
+    --text-primary: #fafafa;
+    --text-secondary: #a3a3a3;
+    --primary-from: #a3a3a3;
+    --primary-to: #d4d4d4;
+    --primary: #d4d4d4;
+    --primary-foreground: #0a0a0a;
+    --input: #262626;
+    --ring: #a3a3a3;
   }
 }
 
@@ -97,8 +105,11 @@
   -webkit-backdrop-filter: blur(12px);
   border-color: var(--border);
 }
+.dark .glass {
+  background: rgba(20, 20, 20, 0.85);
+}
 
-/* Spotlight gradient - violet glow */
+/* Spotlight gradient - violet glow (light) / silver (dark) */
 .spotlight {
   background: radial-gradient(
     ellipse 80% 50% at 50% -20%,
@@ -106,14 +117,27 @@
     transparent
   );
 }
+.dark .spotlight {
+  background: radial-gradient(
+    ellipse 80% 50% at 50% -20%,
+    rgba(163, 163, 163, 0.08),
+    transparent
+  );
+}
 
-/* Hero gradient mesh - animated */
+/* Hero gradient mesh - animated (violet light / silver dark) */
 .hero-gradient-mesh {
   background:
     radial-gradient(ellipse 60% 50% at 20% 40%, rgba(124, 58, 237, 0.15), transparent 50%),
     radial-gradient(ellipse 50% 40% at 80% 60%, rgba(167, 139, 250, 0.12), transparent 50%),
     radial-gradient(ellipse 40% 30% at 50% 80%, rgba(196, 181, 253, 0.08), transparent 50%);
   animation: gradient-shift 12s ease-in-out infinite alternate;
+}
+.dark .hero-gradient-mesh {
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 40%, rgba(163, 163, 163, 0.06), transparent 50%),
+    radial-gradient(ellipse 50% 40% at 80% 60%, rgba(212, 212, 212, 0.05), transparent 50%),
+    radial-gradient(ellipse 40% 30% at 50% 80%, rgba(163, 163, 163, 0.04), transparent 50%);
 }
 @keyframes gradient-shift {
   0% { opacity: 1; transform: scale(1); }

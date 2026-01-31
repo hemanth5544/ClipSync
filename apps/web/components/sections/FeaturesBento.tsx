@@ -123,14 +123,14 @@ export function FeaturesBento() {
               <motion.div
                 key={feature.id}
                 variants={item}
-                className={`group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-white/80 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg hover:shadow-violet-500/15 ${
+                className={`group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-white/80 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg hover:shadow-violet-500/15 dark:bg-zinc-800/90 dark:border-zinc-700 dark:hover:border-zinc-600 dark:hover:shadow-zinc-500/10 ${
                   isLarge
                     ? 'md:col-span-2 md:row-span-3 md:flex md:flex-col md:justify-center md:p-8'
                     : ''
                 }`}
               >
                 <div
-                  className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
+                  className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-zinc-600/20 dark:to-zinc-500/10`}
                 />
                 <div className="relative flex h-full flex-col">
                   <motion.div
