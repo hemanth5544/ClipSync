@@ -1,4 +1,4 @@
-import { formatRelativeTime } from "./timeUtils";
+import { formatRelativeTime, getDateGroup } from "./timeUtils";
 import { isURL, normalizeURL, openURL } from "./urlUtils";
 
-export { formatRelativeTime, isURL, normalizeURL, openURL };
+export { formatRelativeTime, getDateGroup, isURL, normalizeURL, openURL };

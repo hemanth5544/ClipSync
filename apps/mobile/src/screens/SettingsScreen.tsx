@@ -10,6 +10,7 @@ import {
   Alert,
   Image,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
 import { useAppNavigation } from "../hooks/useNavigation";
@@ -75,7 +76,8 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ScrollView style={[styles.container, isDark && styles.containerDark]}>
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={["top", "left", "right"]}>
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       {/* User Info */}
       <View style={[styles.section, isDark && styles.sectionDark]}>
         <View style={styles.userInfo}>
@@ -211,6 +213,7 @@ export default function SettingsScreen() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -221,6 +224,12 @@ const styles = StyleSheet.create({
   },
   containerDark: {
     backgroundColor: "#000",
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 24,
   },
   section: {
     padding: 16,
