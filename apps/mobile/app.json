@@ -44,6 +44,9 @@
     },
     "scheme": "clipsync",
     "extra": {
+      "eas": {
+        "projectId": "71b6b891-ab7e-4ff5-a3e6-0c299c797811"
+      },
       "apiUrl": "http://192.168.1.7:8080/api",
       "authUrl": "http://192.168.1.7:3000"
     },
