@@ -9,24 +9,39 @@ import {
   Alert,
   RefreshControl,
   ActivityIndicator,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import { Clip } from "@clipsync/types";
 import { api } from "../lib/api";
 import { useClipboard } from "../hooks/useClipboard";
-import { formatRelativeTime, isURL, normalizeURL, openURL } from "../lib/utils";
+import { formatRelativeTime, getDateGroup, isURL, normalizeURL, openURL } from "../lib/utils";
 import ClipCard from "../components/ClipCard";
 import { useTheme } from "../contexts/ThemeContext";
+import * as Device from "expo-device";
+import type { DateGroup } from "../lib/timeUtils";
 
 export default function HomeScreen() {
   const { actualTheme } = useTheme();
+  const { deviceName } = useClipboard();
   const [clips, setClips] = useState<Clip[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedClips, setExpandedClips] = useState<Set<string>>(new Set());
-  useClipboard(); // Start clipboard monitoring
-  
+  const [addSnippetVisible, setAddSnippetVisible] = useState(false);
+  const [newSnippetText, setNewSnippetText] = useState("");
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [savingSnippet, setSavingSnippet] = useState(false);
+  const [deletingSelected, setDeletingSelected] = useState(false);
+  const [copiedClipId, setCopiedClipId] = useState<string | null>(null);
+
   const isDark = actualTheme === "dark";
 
   useEffect(() => {
@@ -74,6 +89,21 @@ export default function HomeScreen() {
     });
   }, [clips, searchQuery]);
 
+  const groupOrder: DateGroup[] = ["Today", "Yesterday", "This week", "Older"];
+  const clipsByDate = useMemo(() => {
+    const groups: Record<DateGroup, Clip[]> = {
+      Today: [],
+      Yesterday: [],
+      "This week": [],
+      Older: [],
+    };
+    filteredClips.forEach((c) => {
+      const g = getDateGroup(c.copiedAt);
+      groups[g].push(c);
+    });
+    return groups;
+  }, [filteredClips]);
+
   const toggleExpand = (clipId: string) => {
     setExpandedClips((prev) => {
       const newSet = new Set(prev);
@@ -117,68 +147,306 @@ export default function HomeScreen() {
     }
   };
 
+  const handleAddSnippet = async () => {
+    const content = newSnippetText.trim();
+    if (!content) {
+      Alert.alert("Empty snippet", "Enter or paste some text to save.");
+      return;
+    }
+    setSavingSnippet(true);
+    try {
+      const saved = await api.clips.create({
+        content,
+        deviceName: deviceName || Device.deviceName || "Mobile",
+      });
+      setClips((prev) => [saved, ...prev]);
+      setNewSnippetText("");
+      setAddSnippetVisible(false);
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Failed to save snippet");
+    } finally {
+      setSavingSnippet(false);
+    }
+  };
+
+  const toggleSelectMode = () => {
+    setSelectMode((prev) => !prev);
+    if (selectedIds.size > 0) setSelectedIds(new Set());
+  };
+
+  const toggleSelectClip = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    setSelectedIds(new Set(filteredClips.map((c) => c.id)));
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+    Alert.alert(
+      "Delete selected?",
+      `Delete ${selectedIds.size} clip(s)? This cannot be undone.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setDeletingSelected(true);
+            try {
+              for (const id of selectedIds) {
+                await api.clips.delete(id);
+              }
+              setClips((prev) => prev.filter((c) => !selectedIds.has(c.id)));
+              setSelectedIds(new Set());
+              setSelectMode(false);
+            } catch (error: any) {
+              Alert.alert("Error", error.message || "Failed to delete some clips");
+            } finally {
+              setDeletingSelected(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleClearAll = () => {
+    if (clips.length === 0) return;
+    Alert.alert(
+      "Clear all clips?",
+      "Delete all clips? This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear all",
+          style: "destructive",
+          onPress: async () => {
+            setDeletingSelected(true);
+            try {
+              for (const clip of clips) {
+                await api.clips.delete(clip.id);
+              }
+              setClips([]);
+              setSelectMode(false);
+              setSelectedIds(new Set());
+            } catch (error: any) {
+              Alert.alert("Error", error.message || "Failed to clear clips");
+            } finally {
+              setDeletingSelected(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleCopy = async (content: string, clipId: string) => {
+    try {
+      await Clipboard.setStringAsync(content);
+      setCopiedClipId(clipId);
+      setTimeout(() => setCopiedClipId(null), 2000);
+      const saved = await api.clips.create({
+        content,
+        deviceName: deviceName || Device.deviceName || "Mobile",
+      });
+      setClips((prev) => [saved, ...prev.filter((c) => c.id !== saved.id)]);
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Failed to copy");
+    }
+  };
 
   if (loading && clips.length === 0) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" />
-      </View>
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={["top", "left", "right"]}>
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={isDark ? "#fff" : "#3b82f6"} />
+        </View>
+      </SafeAreaView>
     );
   }
 
+  const renderSection = (group: DateGroup) => {
+    const groupClips = clipsByDate[group];
+    if (groupClips.length === 0) return null;
+    return (
+      <View key={group} style={styles.section}>
+        <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>{group}</Text>
+        {groupClips.map((item) => (
+          <ClipCard
+            key={item.id}
+            clip={item}
+            isExpanded={expandedClips.has(item.id)}
+            onToggleExpand={() => toggleExpand(item.id)}
+            onDelete={() => handleDelete(item)}
+            onToggleFavorite={() => handleToggleFavorite(item.id)}
+            onCopy={(content) => handleCopy(content, item.id)}
+            selectMode={selectMode}
+            isSelected={selectedIds.has(item.id)}
+            onToggleSelect={() => toggleSelectClip(item.id)}
+            isCopied={copiedClipId === item.id}
+          />
+        ))}
+      </View>
+    );
+  };
+
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
-      {/* Search Bar */}
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={["top", "left", "right"]}>
+      {/* Search + New snippet + Select */}
       <View style={[styles.searchContainer, isDark && styles.searchContainerDark]}>
-        <Ionicons name="search" size={20} color={isDark ? "#999" : "#666"} style={styles.searchIcon} />
+        <Ionicons name="search" size={22} color={isDark ? "#999" : "#666"} style={styles.searchIcon} />
         <TextInput
           style={[styles.searchInput, isDark && styles.searchInputDark]}
           placeholder="Search clips..."
           placeholderTextColor={isDark ? "#666" : "#999"}
           value={searchQuery}
           onChangeText={setSearchQuery}
+          editable={!selectMode}
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery("")}>
-            <Ionicons name="close-circle" size={20} color={isDark ? "#999" : "#666"} />
+          <TouchableOpacity onPress={() => setSearchQuery("")} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} style={styles.headerButton}>
+            <Ionicons name="close-circle" size={22} color={isDark ? "#999" : "#666"} />
           </TouchableOpacity>
         )}
+        <TouchableOpacity
+          onPress={() => setAddSnippetVisible(true)}
+          style={styles.headerButton}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          accessibilityLabel="Add new snippet"
+        >
+          <Ionicons name="add-circle" size={26} color={isDark ? "#fff" : "#3b82f6"} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={toggleSelectMode}
+          style={[styles.headerButton, selectMode && styles.headerButtonActive]}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          accessibilityLabel={selectMode ? "Cancel select" : "Select clips"}
+        >
+          <Ionicons
+            name={selectMode ? "close-circle" : "checkbox-outline"}
+            size={26}
+            color={selectMode ? "#ef4444" : isDark ? "#fff" : "#000"}
+          />
+        </TouchableOpacity>
       </View>
+
+      {/* Select mode toolbar */}
+      {selectMode && (
+        <View style={[styles.selectToolbar, isDark && styles.selectToolbarDark]}>
+          <TouchableOpacity onPress={selectAll} style={styles.toolbarButton}>
+            <Text style={[styles.toolbarButtonText, isDark && styles.toolbarButtonTextDark]}>
+              Select all
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleDeleteSelected}
+            disabled={selectedIds.size === 0 || deletingSelected}
+            style={[styles.toolbarButton, selectedIds.size === 0 && styles.toolbarButtonDisabled]}
+          >
+            <Ionicons name="trash-outline" size={18} color={selectedIds.size === 0 ? "#666" : "#ef4444"} />
+            <Text style={[styles.toolbarButtonTextDanger, selectedIds.size === 0 && styles.toolbarButtonTextDisabled]}>
+              Delete ({selectedIds.size})
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleClearAll} disabled={deletingSelected || clips.length === 0} style={styles.toolbarButton}>
+            <Text style={[styles.toolbarButtonTextDanger, (deletingSelected || clips.length === 0) && styles.toolbarButtonTextDisabled]}>
+              Clear all
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {filteredClips.length === 0 ? (
         <View style={styles.centerContainer}>
+          <View style={[styles.emptyIconWrap, isDark && styles.emptyIconWrapDark]}>
+            <Ionicons name="clipboard-outline" size={48} color={isDark ? "#666" : "#999"} />
+          </View>
           <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>
             {searchQuery ? "No clips found" : "No clips yet"}
           </Text>
           <Text style={[styles.emptySubtext, isDark && styles.emptySubtextDark]}>
-            {searchQuery ? "Try a different search term" : "Start copying text to see your clipboard history"}
+            {searchQuery ? "Try a different search term" : "Copy text anywhere to see it here"}
           </Text>
         </View>
       ) : (
         <FlatList
-          data={filteredClips}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <ClipCard
-              clip={item}
-              isExpanded={expandedClips.has(item.id)}
-              onToggleExpand={() => toggleExpand(item.id)}
-              onDelete={() => handleDelete(item)}
-              onToggleFavorite={() => handleToggleFavorite(item.id)}
-              onCopy={async (content) => {
-                const { Clipboard } = require("expo-clipboard");
-                await Clipboard.setStringAsync(content);
-                Alert.alert("Copied", "Content copied to clipboard");
-              }}
-            />
-          )}
+          data={groupOrder}
+          keyExtractor={(g) => g}
+          renderItem={({ item: group }) => renderSection(group)}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={isDark ? "#fff" : "#3b82f6"} />
           }
           contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
         />
       )}
-    </View>
+
+      {/* Add new snippet modal */}
+      <Modal
+        visible={addSnippetVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setAddSnippetVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.modalOverlay}
+        >
+          <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setAddSnippetVisible(false)} />
+          <SafeAreaView style={styles.modalSafeArea} edges={["bottom"]}>
+            <View style={[styles.modalContent, isDark && styles.modalContentDark]}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, isDark && styles.modalTitleDark]}>Add new snippet</Text>
+                <TouchableOpacity onPress={() => { setAddSnippetVisible(false); setNewSnippetText(""); }} hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}>
+                  <Ionicons name="close" size={28} color={isDark ? "#fff" : "#000"} />
+                </TouchableOpacity>
+              </View>
+            <Text style={[styles.modalDescription, isDark && styles.modalDescriptionDark]}>
+              Paste or type text to save as a new clip.
+            </Text>
+            <ScrollView style={styles.modalScroll} keyboardShouldPersistTaps="handled">
+              <TextInput
+                style={[styles.snippetInput, isDark && styles.snippetInputDark]}
+                placeholder="Paste or type your snippet here..."
+                placeholderTextColor={isDark ? "#666" : "#999"}
+                value={newSnippetText}
+                onChangeText={setNewSnippetText}
+                multiline
+                numberOfLines={6}
+                textAlignVertical="top"
+              />
+            </ScrollView>
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonSecondary, isDark && styles.modalButtonSecondaryDark]}
+                onPress={() => { setAddSnippetVisible(false); setNewSnippetText(""); }}
+              >
+                <Text style={[styles.modalButtonTextSecondary, isDark && styles.modalButtonTextSecondaryDark]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonPrimary, (!newSnippetText.trim() || savingSnippet) && styles.modalButtonDisabled]}
+                onPress={handleAddSnippet}
+                disabled={!newSnippetText.trim() || savingSnippet}
+              >
+                {savingSnippet ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.modalButtonTextPrimary}>Save snippet</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+          </SafeAreaView>
+        </KeyboardAvoidingView>
+      </Modal>
+    </SafeAreaView>
   );
 }
 
@@ -194,27 +462,113 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#f5f5f5",
-    margin: 16,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    height: 44,
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 12,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    height: 48,
   },
   searchContainerDark: {
     backgroundColor: "#1a1a1a",
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: 10,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
     color: "#000",
+    minWidth: 0,
+    paddingVertical: 4,
   },
   searchInputDark: {
     color: "#fff",
   },
+  headerButton: {
+    padding: 8,
+    marginLeft: 4,
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerButtonActive: {
+    opacity: 0.9,
+  },
+  selectToolbar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: "#f0f0f0",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e5e5",
+  },
+  selectToolbarDark: {
+    backgroundColor: "#1a1a1a",
+    borderBottomColor: "#333",
+  },
+  toolbarButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    minHeight: 44,
+    justifyContent: "center",
+  },
+  toolbarButtonDisabled: {
+    opacity: 0.5,
+  },
+  toolbarButtonText: {
+    fontSize: 14,
+    color: "#333",
+  },
+  toolbarButtonTextDark: {
+    color: "#ccc",
+  },
+  toolbarButtonTextDanger: {
+    fontSize: 14,
+    color: "#ef4444",
+    fontWeight: "600",
+  },
+  toolbarButtonTextDisabled: {
+    color: "#666",
+    fontWeight: "normal",
+  },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 24,
+  },
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#666",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 10,
+    marginLeft: 4,
+  },
+  sectionTitleDark: {
+    color: "#999",
+  },
+  emptyIconWrap: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: "#f0f0f0",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  emptyIconWrapDark: {
+    backgroundColor: "#1a1a1a",
   },
   centerContainer: {
     flex: 1,
@@ -238,5 +592,103 @@ const styles = StyleSheet.create({
   },
   emptySubtextDark: {
     color: "#666",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalBackdrop: {
+    flex: 1,
+  },
+  modalSafeArea: {
+    maxHeight: "85%",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 32,
+    maxHeight: "100%",
+  },
+  modalContentDark: {
+    backgroundColor: "#111",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#000",
+  },
+  modalTitleDark: {
+    color: "#fff",
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 12,
+  },
+  modalDescriptionDark: {
+    color: "#999",
+  },
+  modalScroll: {
+    maxHeight: 200,
+  },
+  snippetInput: {
+    borderWidth: 1,
+    borderColor: "#e5e5e5",
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 16,
+    color: "#000",
+    minHeight: 140,
+  },
+  snippetInputDark: {
+    borderColor: "#333",
+    color: "#fff",
+    backgroundColor: "#1a1a1a",
+  },
+  modalFooter: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 20,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalButtonPrimary: {
+    backgroundColor: "#3b82f6",
+  },
+  modalButtonSecondary: {
+    backgroundColor: "#f0f0f0",
+  },
+  modalButtonSecondaryDark: {
+    backgroundColor: "#333",
+  },
+  modalButtonDisabled: {
+    opacity: 0.5,
+  },
+  modalButtonTextPrimary: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+  },
+  modalButtonTextSecondary: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+  },
+  modalButtonTextSecondaryDark: {
+    color: "#fff",
   },
 });

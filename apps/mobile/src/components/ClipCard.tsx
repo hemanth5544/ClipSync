@@ -23,6 +23,12 @@ interface ClipCardProps {
   onDelete: () => void;
   onToggleFavorite: () => void;
   onCopy: (content: string) => void;
+  /** When true, show checkbox and tap toggles selection instead of expand */
+  selectMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
+  /** When true, show checkmark on copy button (just copied) */
+  isCopied?: boolean;
 }
 
 export default function ClipCard({
@@ -32,6 +38,10 @@ export default function ClipCard({
   onDelete,
   onToggleFavorite,
   onCopy,
+  selectMode = false,
+  isSelected = false,
+  onToggleSelect,
+  isCopied = false,
 }: ClipCardProps) {
   const { actualTheme } = useTheme();
   const shouldShowExpand = clip.content.length > 150;
@@ -119,6 +129,17 @@ export default function ClipCard({
 
         {/* Header */}
         <View style={styles.header}>
+          {selectMode && onToggleSelect ? (
+            <TouchableOpacity
+              onPress={onToggleSelect}
+              style={styles.checkboxTouch}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+                {isSelected && <Ionicons name="checkmark" size={16} color="#fff" />}
+              </View>
+            </TouchableOpacity>
+          ) : null}
           <View style={styles.headerLeft}>
             <Text
               style={[styles.preview, isDark && styles.previewDark]}
@@ -150,12 +171,13 @@ export default function ClipCard({
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => onCopy(clip.content)}
-              style={styles.iconButton}
+              style={[styles.iconButton, isCopied && styles.iconButtonCopied]}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
               <Ionicons
-                name="copy-outline"
-                size={20}
-                color={isDark ? "#999" : "#666"}
+                name={isCopied ? "checkmark-circle" : "copy-outline"}
+                size={22}
+                color={isCopied ? "#22c55e" : isDark ? "#999" : "#666"}
               />
             </TouchableOpacity>
             <TouchableOpacity onPress={onDelete} style={styles.iconButton}>
@@ -168,10 +190,14 @@ export default function ClipCard({
           </View>
         </View>
 
-        {/* Content - Double tap to favorite */}
+        {/* Content - In select mode tap toggles selection; otherwise double tap to favorite */}
         <TouchableOpacity
           activeOpacity={1}
-          onPress={handleDoubleTap}
+          onPress={
+            selectMode && onToggleSelect
+              ? onToggleSelect
+              : handleDoubleTap
+          }
           delayPressIn={0}
         >
           <View style={styles.content}>
@@ -253,20 +279,20 @@ export default function ClipCard({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "#e5e5e5",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
     overflow: "hidden",
   },
   cardDark: {
-    backgroundColor: "#000",
+    backgroundColor: "#111",
     borderColor: "#333",
   },
   deleteIndicator: {
@@ -283,11 +309,30 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 12,
+  },
+  checkboxTouch: {
+    marginRight: 12,
+    padding: 4,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: "#999",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkboxSelected: {
+    backgroundColor: "#3b82f6",
+    borderColor: "#3b82f6",
   },
   headerLeft: {
     flex: 1,
     marginRight: 12,
+    minWidth: 0,
   },
   preview: {
     fontSize: 16,
@@ -312,10 +357,19 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: "row",
-    gap: 8,
+    gap: 4,
+    alignItems: "center",
   },
   iconButton: {
-    padding: 4,
+    padding: 10,
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  iconButtonCopied: {
+    backgroundColor: "rgba(34, 197, 94, 0.15)",
+    borderRadius: 22,
   },
   content: {
     marginTop: 8,

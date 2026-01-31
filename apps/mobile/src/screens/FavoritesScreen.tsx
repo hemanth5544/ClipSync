@@ -10,7 +10,9 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import { Clip } from "@clipsync/types";
 import { api } from "../lib/api";
 import { formatRelativeTime, isURL, normalizeURL, openURL } from "../lib/utils";
@@ -24,6 +26,7 @@ export default function FavoritesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedClips, setExpandedClips] = useState<Set<string>>(new Set());
+  const [copiedClipId, setCopiedClipId] = useState<string | null>(null);
   const isDark = actualTheme === "dark";
 
   useEffect(() => {
@@ -111,19 +114,30 @@ export default function FavoritesScreen() {
   };
 
 
+  const handleCopy = async (content: string, clipId: string) => {
+    try {
+      await Clipboard.setStringAsync(content);
+      setCopiedClipId(clipId);
+      setTimeout(() => setCopiedClipId(null), 2000);
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Failed to copy");
+    }
+  };
+
   if (loading && clips.length === 0) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" />
-      </View>
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={["top", "left", "right"]}>
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={isDark ? "#fff" : "#3b82f6"} />
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
-      {/* Search Bar */}
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={["top", "left", "right"]}>
       <View style={[styles.searchContainer, isDark && styles.searchContainerDark]}>
-        <Ionicons name="search" size={20} color={isDark ? "#999" : "#666"} style={styles.searchIcon} />
+        <Ionicons name="search" size={22} color={isDark ? "#999" : "#666"} style={styles.searchIcon} />
         <TextInput
           style={[styles.searchInput, isDark && styles.searchInputDark]}
           placeholder="Search favorites..."
@@ -132,15 +146,17 @@ export default function FavoritesScreen() {
           onChangeText={setSearchQuery}
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery("")}>
-            <Ionicons name="close-circle" size={20} color={isDark ? "#999" : "#666"} />
+          <TouchableOpacity onPress={() => setSearchQuery("")} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+            <Ionicons name="close-circle" size={22} color={isDark ? "#999" : "#666"} />
           </TouchableOpacity>
         )}
       </View>
 
       {filteredClips.length === 0 ? (
         <View style={styles.centerContainer}>
-          <Ionicons name="star-outline" size={64} color={isDark ? "#444" : "#ccc"} />
+          <View style={[styles.emptyIconWrap, isDark && styles.emptyIconWrapDark]}>
+            <Ionicons name="star-outline" size={48} color={isDark ? "#666" : "#999"} />
+          </View>
           <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>
             {searchQuery ? "No favorites found" : "No favorite clips yet"}
           </Text>
@@ -159,20 +175,18 @@ export default function FavoritesScreen() {
               onToggleExpand={() => toggleExpand(item.id)}
               onDelete={() => handleDelete(item)}
               onToggleFavorite={() => handleToggleFavorite(item.id)}
-              onCopy={async (content) => {
-                const { Clipboard } = require("expo-clipboard");
-                await Clipboard.setStringAsync(content);
-                Alert.alert("Copied", "Content copied to clipboard");
-              }}
+              onCopy={(content) => handleCopy(content, item.id)}
+              isCopied={copiedClipId === item.id}
             />
           )}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={isDark ? "#fff" : "#3b82f6"} />
           }
           contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -188,27 +202,32 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#f5f5f5",
-    margin: 16,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    height: 44,
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 12,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    height: 48,
   },
   searchContainerDark: {
     backgroundColor: "#1a1a1a",
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: 10,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
     color: "#000",
+    paddingVertical: 4,
   },
   searchInputDark: {
     color: "#fff",
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 24,
   },
   centerContainer: {
     flex: 1,
@@ -216,11 +235,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
   },
+  emptyIconWrap: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: "#f0f0f0",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  emptyIconWrapDark: {
+    backgroundColor: "#1a1a1a",
+  },
   emptyText: {
     fontSize: 18,
     fontWeight: "600",
     color: "#666",
-    marginTop: 16,
     marginBottom: 8,
   },
   emptyTextDark: {
