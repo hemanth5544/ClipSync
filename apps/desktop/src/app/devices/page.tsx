@@ -71,7 +71,7 @@ export default function DevicesPage() {
             }
           }}
         />
-        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6">
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-4">
           <div className="max-w-2xl mx-auto">
             <p className="text-muted-foreground mb-6">
               Connect your mobile device to sync clips across all your devices

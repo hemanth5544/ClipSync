@@ -179,7 +179,7 @@ export default function FavoritesPage() {
       </div>
     </div>
   ) : (
-    <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6">
+    <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-4">
             <div className="grid gap-4">
               {filteredClips.map((clip) => {
                 const isExpanded = expandedClips.has(clip.id);

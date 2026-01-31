@@ -153,7 +153,7 @@ const isElectron = typeof window !== "undefined" && window.electronAPI;
             </p>
           </div>
         )}
-        <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6">
+        <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-4">
           <ClipList searchQuery={searchQuery} />
         </main>
       </div>
