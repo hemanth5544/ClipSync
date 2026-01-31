@@ -56,6 +56,7 @@ func InitializeRouter(db *gorm.DB) *gin.Engine {
 		{
 			clips.GET("", clipHandler.GetClips)
 			clips.POST("", clipHandler.CreateClip)
+			clips.DELETE("/all", clipHandler.DeleteAll)
 			clips.GET("/:id", clipHandler.GetClip)
 			clips.DELETE("/:id", clipHandler.DeleteClip)
 			clips.PUT("/:id/favorite", clipHandler.ToggleFavorite)

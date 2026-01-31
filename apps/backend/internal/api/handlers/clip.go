@@ -137,6 +137,22 @@ func (h *ClipHandler) DeleteClip(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Clip deleted successfully"})
 }
 
+func (h *ClipHandler) DeleteAll(c *gin.Context) {
+	userID, _ := c.Get("userId")
+	userIDStr := userID.(string)
+
+	result := h.db.Where("user_id = ?", userIDStr).Delete(&models.Clip{})
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to clear clips"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "All clips cleared",
+		"deleted": result.RowsAffected,
+	})
+}
+
 func (h *ClipHandler) ToggleFavorite(c *gin.Context) {
 	userID, _ := c.Get("userId")
 	clipID := c.Param("id")
