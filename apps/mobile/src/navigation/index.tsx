@@ -2,13 +2,14 @@ import { NavigationContainer, NavigationContainerRef } from "@react-navigation/n
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PairingScreen from "../screens/PairingScreen";
 import HomeScreen from "../screens/HomeScreen";
 import FavoritesScreen from "../screens/FavoritesScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, Platform } from "react-native";
 import React from "react";
 
 const Stack = createNativeStackNavigator();
@@ -16,17 +17,22 @@ const Tab = createBottomTabNavigator();
 
 function TabNavigator() {
   const { actualTheme } = useTheme();
+  const insets = useSafeAreaInsets();
   const isDark = actualTheme === "dark";
-  
+
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: isDark ? "#fff" : "#000",
+        tabBarActiveTintColor: isDark ? "#fff" : "#3b82f6",
         tabBarInactiveTintColor: isDark ? "#666" : "#666",
         tabBarStyle: {
           backgroundColor: isDark ? "#000" : "#fff",
           borderTopColor: isDark ? "#333" : "#e5e5e5",
+          paddingTop: 8,
+          paddingBottom: Platform.OS === "ios" ? Math.max(insets.bottom, 8) : 8,
+          height: 56 + (Platform.OS === "ios" ? insets.bottom : 0),
         },
+        tabBarLabelStyle: { fontSize: 12, fontWeight: "500" },
         headerStyle: {
           backgroundColor: isDark ? "#000" : "#fff",
         },
