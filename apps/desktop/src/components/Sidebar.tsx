@@ -77,13 +77,12 @@ export default function Sidebar() {
     <div
       className={`${collapsed ? "w-16" : "w-64"} bg-card border-r border-border flex flex-col transition-[width] duration-200 ease-in-out shrink-0`}
     >
-      <div className={`border-b border-border flex items-center gap-2 ${collapsed ? "p-2 justify-center" : "p-4 justify-between"}`}>
+      <div className={`border-b border-border flex items-center ${collapsed ? "p-2 justify-center" : "p-3"}`}>
         {collapsed ? (
           <span className="text-lg font-bold" title="ClipSync">C</span>
         ) : (
-          <h1 className="text-xl font-bold truncate">ClipSync</h1>
+          <h1 className="text-lg font-bold truncate">ClipSync</h1>
         )}
-        <ThemeToggle />
       </div>
       <nav className={`flex-1 space-y-1 ${collapsed ? "p-2" : "p-4"}`}>
         <Link href="/" title={collapsed ? "All Clips" : undefined}>
@@ -131,6 +130,7 @@ export default function Sidebar() {
             {!collapsed && "Devices"}
           </Button>
         </Link>
+        <ThemeToggle collapsed={collapsed} />
         <Link href="/settings" title={collapsed ? "Settings" : undefined}>
           <Button
             variant={pathname === "/settings" ? "secondary" : "ghost"}

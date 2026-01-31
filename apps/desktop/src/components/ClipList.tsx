@@ -5,7 +5,7 @@ import { Clip } from "@clipsync/types";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@clipsync/ui";
 import { ToastAction } from "@clipsync/ui";
-import { Heart, Copy, Trash2, Clock, Monitor, ChevronDown, ChevronUp, Check, ExternalLink, Pin, Maximize2, Code, FileText, List, LayoutGrid } from "lucide-react";
+import { Heart, Copy, Trash2, Trash, Clock, Monitor, ChevronDown, ChevronUp, Check, ExternalLink, Pin, Maximize2, Code, FileText, List, LayoutGrid } from "lucide-react";
 import { Button } from "@clipsync/ui";
 import { useToast } from "@clipsync/ui";
 import { CLIP_SAVED_EVENT } from "@/hooks/useClipboard";
@@ -26,6 +26,7 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
   const [expandedClips, setExpandedClips] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clipToDelete, setClipToDelete] = useState<Clip | null>(null);
+  const [clearAllDialogOpen, setClearAllDialogOpen] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [clipToPreview, setClipToPreview] = useState<Clip | null>(null);
   const [copiedClipId, setCopiedClipId] = useState<string | null>(null);
@@ -166,6 +167,26 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
   const handleDeleteClick = (clip: Clip) => {
     setClipToDelete(clip);
     setDeleteDialogOpen(true);
+  };
+
+  const handleClearAllConfirm = async () => {
+    try {
+      const { deleted } = await api.clips.deleteAll();
+      setClips([]);
+      seenClipIdsRef.current.clear();
+      initialLoadDoneRef.current = false;
+      setClearAllDialogOpen(false);
+      toast({
+        title: "Cleared",
+        description: `${deleted} clip${deleted === 1 ? "" : "s"} removed`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to clear clips",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -322,36 +343,48 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
 
   return (
     <>
-      <div className="flex items-center justify-end gap-1 mb-4">
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-1">
+          <Button
+            variant={viewMode === "list" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("list")}
+            title="List view"
+          >
+            <List className="h-4 w-4 mr-1" />
+            List
+          </Button>
+          <Button
+            variant={viewMode === "compact" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("compact")}
+            title="Compact view"
+          >
+            <LayoutGrid className="h-4 w-4 mr-1" />
+            Compact
+          </Button>
+        </div>
         <Button
-          variant={viewMode === "list" ? "secondary" : "ghost"}
+          variant="ghost"
           size="sm"
-          onClick={() => setViewMode("list")}
-          title="List view"
+          onClick={() => setClearAllDialogOpen(true)}
+          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+          title="Clear all clips"
         >
-          <List className="h-4 w-4 mr-1" />
-          List
-        </Button>
-        <Button
-          variant={viewMode === "compact" ? "secondary" : "ghost"}
-          size="sm"
-          onClick={() => setViewMode("compact")}
-          title="Compact view"
-        >
-          <LayoutGrid className="h-4 w-4 mr-1" />
-          Compact
+          <Trash className="h-4 w-4 mr-1" />
+          Clear all
         </Button>
       </div>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {groupOrder.map((group) => {
           const groupClips = clipsByDate[group];
           if (groupClips.length === 0) return null;
           return (
             <section key={group}>
-              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-3 px-1">
+              <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 px-0.5">
                 {group}
               </h2>
-              <div className={viewMode === "compact" ? "grid gap-2" : "grid gap-4"}>
+              <div className={viewMode === "compact" ? "grid gap-1.5" : "grid gap-2"}>
                 {groupClips.map((clip) => {
           const isExpanded = expandedClips.has(clip.id);
           const isCopied = copiedClipId === clip.id;
@@ -364,13 +397,13 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
               key={clip.id} 
               className={`transition-all relative border hover:shadow-md hover:border-accent/50 ${
                 isCopied ? "ring-2 ring-green-500 ring-offset-2 shadow-md border-green-500/30" : ""
-              }               ${clip.isPinned ? "border-l-4 border-l-primary" : ""} ${
+              } ${clip.isPinned ? "border-l-4 border-l-amber-500 bg-amber-50/60 dark:bg-amber-950/25 dark:border-amber-500/80 shadow-amber-500/5" : ""} ${
                 viewMode === "compact" ? "py-2 px-3" : ""
               }`}
             >
               {clip.isPinned && (
                 <div className={viewMode === "compact" ? "absolute top-1.5 right-2" : "absolute top-2 right-2"}>
-                  <Pin className="h-4 w-4 text-primary fill-primary" />
+                  <Pin className="h-4 w-4 text-amber-500 fill-amber-500 dark:text-amber-400 dark:fill-amber-400" />
                 </div>
               )}
               <CardHeader className={viewMode === "compact" ? "p-0 pb-1" : ""}>
@@ -407,7 +440,7 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleTogglePin(clip)}
-                      className={clip.isPinned ? "text-primary" : ""}
+                      className={clip.isPinned ? "text-amber-500 dark:text-amber-400" : ""}
                       title={clip.isPinned ? "Unpin" : "Pin"}
                     >
                       <Pin
@@ -553,6 +586,26 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
           );
         })}
       </div>
+
+      {/* Clear All Confirmation Dialog */}
+      <Dialog open={clearAllDialogOpen} onOpenChange={setClearAllDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Clear all clips?</DialogTitle>
+            <DialogDescription>
+              This will permanently delete all {clips.length} clip{clips.length === 1 ? "" : "s"}. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setClearAllDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleClearAllConfirm}>
+              Clear all
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

@@ -26,7 +26,7 @@ export default function AppHeader({
 }: AppHeaderProps) {
   return (
     <>
-      <div className="flex items-center gap-2 p-4 border-b border-border flex-shrink-0">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-border flex-shrink-0">
         <div className="flex-1 min-w-0 flex items-center gap-2">
           <button
             type="button"
@@ -59,6 +59,9 @@ export default function AppHeader({
             New snippet
           </Button>
         )}
+        <span className="text-sm font-semibold text-muted-foreground tracking-tight shrink-0">
+          ClipSync
+        </span>
       </div>
       {pageTitle && (
         <div className="px-4 py-2 border-b border-border flex-shrink-0">

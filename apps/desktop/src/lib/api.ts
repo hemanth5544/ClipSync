@@ -118,6 +118,13 @@ export const api = {
       });
     },
 
+    deleteAll: async (): Promise<{ deleted: number }> => {
+      const response = await fetchWithAuth("/clips/all", {
+        method: "DELETE",
+      });
+      return response.json();
+    },
+
     toggleFavorite: async (id: string): Promise<Clip> => {
       const response = await fetchWithAuth(`/clips/${id}/favorite`, {
         method: "PUT",
