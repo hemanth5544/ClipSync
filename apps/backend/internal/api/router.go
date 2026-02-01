@@ -30,6 +30,7 @@ func InitializeRouter(db *gorm.DB) *gin.Engine {
 	syncHandler := handlers.NewSyncHandler(db)
 	pairingHandler := handlers.NewPairingHandler(db)
 	secureHandler := handlers.NewSecureHandler(db)
+	messagesHandler := handlers.NewMessagesHandler(db)
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
@@ -82,6 +83,14 @@ func InitializeRouter(db *gorm.DB) *gin.Engine {
 			secure.POST("/clips", secureHandler.CreateSecureClip)
 			secure.PUT("/clips/:id", secureHandler.UpdateSecureClip)
 			secure.DELETE("/clips/:id", secureHandler.DeleteSecureClip)
+		}
+
+		messages := api.Group("/messages")
+		messages.Use(middleware.AuthMiddleware())
+		{
+			messages.GET("", messagesHandler.List)
+			messages.GET("/new-since", messagesHandler.NewSince)
+			messages.POST("/push", messagesHandler.Push)
 		}
 	}
 

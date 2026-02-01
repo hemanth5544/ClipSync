@@ -74,7 +74,14 @@ func RunMigrations(db *gorm.DB) error {
 		return err
 	}
 	log.Println("SecureClip table migrated successfully")
-	
+
+	log.Println("Migrating SyncedMessage table...")
+	if err := db.AutoMigrate(&models.SyncedMessage{}); err != nil {
+		log.Printf("Error migrating SyncedMessage: %v", err)
+		return err
+	}
+	log.Println("SyncedMessage table migrated successfully")
+
 	log.Println("All migrations completed successfully!")
 	return nil
 }
