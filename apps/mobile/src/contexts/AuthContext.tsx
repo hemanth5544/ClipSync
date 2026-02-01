@@ -1,9 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { getAuthToken, setAuthToken } from "../lib/api";
+import { getAuthToken, setAuthToken, getApiUrl } from "../lib/api";
 import { signOutAuth } from "../lib/auth";
-import Constants from "expo-constants";
-
-const API_URL = Constants.expoConfig?.extra?.apiUrl || "http://localhost:8080/api";
 
 interface User {
   id: string;
@@ -34,11 +31,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkAuth = async () => {
     try {
       const token = await getAuthToken();
-      if (token) {
+      const apiUrl = getApiUrl();
+      // Skip verification if no API URL (e.g. misconfigured build)
+      if (token && !apiUrl) {
+        await setAuthToken(null);
+        setUser(null);
+        return;
+      }
+      if (token && apiUrl) {
         // Try to verify token and get user details
         try {
           const { api } = require("../lib/api");
-          // First verify token works
           await api.clips.getAll({ pageSize: 1 });
           // Then get user details
           try {
@@ -70,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const pairWithCode = async (code: string) => {
     try {
-      const response = await fetch(`${API_URL}/pairing/verify`, {
+      const response = await fetch(`${getApiUrl()}/pairing/verify`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

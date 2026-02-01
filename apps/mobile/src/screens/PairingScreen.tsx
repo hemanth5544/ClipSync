@@ -13,9 +13,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useAppNavigation } from "../hooks/useNavigation";
 import { useTheme } from "../contexts/ThemeContext";
 import * as Linking from "expo-linking";
-import Constants from "expo-constants";
-
-const API_URL = Constants.expoConfig?.extra?.apiUrl || "http://192.168.1.7:8080/api";
+import { getApiUrl } from "../lib/api";
 
 export default function PairingScreen() {
   const { actualTheme } = useTheme();

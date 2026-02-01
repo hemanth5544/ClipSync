@@ -5,13 +5,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AUTH_TOKEN_KEY = "clipsync_auth_token";
 
-// On Android, localhost is the device. We replace it so the app can reach your machine:
-// - Android emulator: 10.0.2.2 = host machine (so localhost → 10.0.2.2 works in emulator).
-// - Physical device (Expo Go): set in root .env your machine's LAN IP, e.g.:
-//   NEXT_PUBLIC_BETTER_AUTH_URL=http://192.168.0.107:3001
-//   NEXT_PUBLIC_API_URL=http://192.168.0.107:8080/api
-//   Then restart Metro; the app will use that IP and 10.0.2.2 is not used.
+// On Android emulator, localhost = device. Replace with 10.0.2.2 to reach host machine.
 function resolveBaseUrl(url: string): string {
+  if (!url) return url;
   if (Platform.OS === "android" && /localhost|127\.0\.0\.1/.test(url)) {
     return url.replace(/localhost|127\.0\.0\.1/g, "10.0.2.2");
   }
@@ -19,37 +15,50 @@ function resolveBaseUrl(url: string): string {
 }
 
 function getApiUrl(): string {
-  const raw = Constants.expoConfig?.extra?.apiUrl || "http://localhost:8080/api";
+  const raw = Constants.expoConfig?.extra?.apiUrl ?? "";
+  if (!raw) {
+    console.warn("[ClipSync] apiUrl not set. Set EXPO_PUBLIC_API_URL or NEXT_PUBLIC_API_URL in .env");
+  }
   return resolveBaseUrl(raw);
 }
 
 export function getAuthBaseUrl(): string {
-  const raw = Constants.expoConfig?.extra?.authUrl || "http://localhost:3000";
-  console.log("Auth Base URL:", raw);
-
-  return "https://clipsync-auth.up.railway.app"
-  // return resolved;
+  const raw = Constants.expoConfig?.extra?.authUrl ?? "";
+  if (!raw) {
+    console.warn("[ClipSync] authUrl not set. Set EXPO_PUBLIC_BETTER_AUTH_URL or NEXT_PUBLIC_BETTER_AUTH_URL in .env");
+  }
+  return resolveBaseUrl(raw);
 }
 
-// expo-secure-store is not available on web; use AsyncStorage for web, SecureStore on native
+// Export for screens that need the raw API base (e.g. pairing)
+export { getApiUrl };
+
+// expo-secure-store can crash on some Android devices in release. Fall back to AsyncStorage.
+let _store: { setItem: (k: string, v: string) => Promise<void>; getItem: (k: string) => Promise<string | null>; removeItem: (k: string) => Promise<void> } | null = null;
+
 async function getSecureStore(): Promise<{
   setItem: (key: string, value: string) => Promise<void>;
   getItem: (key: string) => Promise<string | null>;
   removeItem: (key: string) => Promise<void>;
 }> {
+  if (_store) return _store;
   if (Platform.OS === "web") {
-    return {
-      setItem: (key, value) => AsyncStorage.setItem(key, value),
-      getItem: (key) => AsyncStorage.getItem(key),
-      removeItem: (key) => AsyncStorage.removeItem(key),
-    };
+    _store = { setItem: (k, v) => AsyncStorage.setItem(k, v), getItem: (k) => AsyncStorage.getItem(k), removeItem: (k) => AsyncStorage.removeItem(k) };
+    return _store;
   }
-  const SecureStore = await import("expo-secure-store");
-  return {
-    setItem: (key, value) => SecureStore.setItemAsync(key, value),
-    getItem: (key) => SecureStore.getItemAsync(key),
-    removeItem: (key) => SecureStore.deleteItemAsync(key),
-  };
+  try {
+    const SecureStore = await import("expo-secure-store");
+    _store = {
+      setItem: (k, v) => SecureStore.setItemAsync(k, v),
+      getItem: (k) => SecureStore.getItemAsync(k),
+      removeItem: (k) => SecureStore.deleteItemAsync(k),
+    };
+    return _store;
+  } catch (e) {
+    console.warn("[ClipSync] SecureStore failed, using AsyncStorage:", e);
+    _store = { setItem: (k, v) => AsyncStorage.setItem(k, v), getItem: (k) => AsyncStorage.getItem(k), removeItem: (k) => AsyncStorage.removeItem(k) };
+    return _store;
+  }
 }
 
 // Store auth token (secure on native, AsyncStorage on web)
@@ -258,7 +267,6 @@ export const api = {
       }
 
       const authUrl = getAuthBaseUrl();
-      console.log("Fetching user details from:", authUrl);
       const response = await fetch(`${authUrl}/api/user`, {
         method: "GET",
         headers: {

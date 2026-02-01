@@ -13,8 +13,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.clipsync.mobile",
-      "associatedDomains": ["applinks:localhost"]
+      "bundleIdentifier": "com.clipsync.mobile"
     },
     "android": {
       "adaptiveIcon": {
@@ -45,10 +44,8 @@
     "scheme": "clipsync",
     "extra": {
       "eas": {
-        "projectId": "71b6b891-ab7e-4ff5-a3e6-0c299c797811"
-      },
-      "apiUrl": "http://192.168.1.7:8080/api",
-      "authUrl": "http://192.168.1.7:3000"
+        "projectId": "d17e5cca-f104-4387-a1e5-53a001d98ad3"
+      }
     },
     "plugins": [
       "expo-secure-store"

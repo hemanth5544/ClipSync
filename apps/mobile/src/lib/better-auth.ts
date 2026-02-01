@@ -1,11 +1,10 @@
 import { createAuthClient } from "better-auth/react";
 import Constants from "expo-constants";
 
-// Use the same base URL as auth.ts
-const AUTH_BASE_URL = "http://192.168.1.7:3000";
+const AUTH_BASE_URL = Constants.expoConfig?.extra?.authUrl ?? "";
 
 export const authClient = createAuthClient({
-  baseURL: AUTH_BASE_URL,
+  baseURL: AUTH_BASE_URL || "https://clipsync-auth.up.railway.app",
 });
 
 // Export auth methods
