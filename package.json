@@ -5,37 +5,30 @@
   "description": "ClipSync monorepo — install from root with pnpm so all apps use workspace packages (@clipsync/types, @clipsync/ui, etc.).",
   "scripts": {
     "dev": "turbo run dev",
-    
     "build:skip": "echo 'Build skipped - running in dev mode' && exit 0",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "clean": "turbo run clean && rm -rf node_modules",
-    
     "backend:dev": "cd apps/backend && go run cmd/server/main.go",
     "backend:build": "cd apps/backend && go build -o bin/server ./cmd/server",
     "backend:start": "cd apps/backend && ./bin/server",
     "backend:migrate": "cd apps/backend && go run cmd/server/main.go migrate",
     "backend:build:railway": "cd apps/backend && go build -o bin/server ./cmd/server",
     "backend:start:railway": "cd apps/backend && ./bin/server",
-    
-
     "desktop:dev": "cd apps/desktop && pnpm dev",
     "desktop:build": "cd apps/desktop && pnpm build",
     "electron:dev": "cd apps/desktop && pnpm electron:dev",
     "electron:dev:prod": "cd apps/desktop && pnpm electron:dev:prod",
     "electron:dev:network": "cd apps/desktop && pnpm electron:dev:network",
     "electron:build": "cd apps/desktop && pnpm electron:build",
-    
     "mobile:start": "cd apps/mobile && pnpm start",
     "mobile:start:clear": "cd apps/mobile && pnpm start:clear",
     "mobile:android": "cd apps/mobile && pnpm android",
     "mobile:ios": "cd apps/mobile && pnpm ios",
     "mobile:web": "cd apps/mobile && pnpm web",
-
     "web:dev": "cd apps/web && pnpm dev",
     "web:build": "cd apps/web && pnpm build",
     "web:start": "cd apps/web && pnpm start",
-
     "db:migrate": "cd apps/backend && go run cmd/server/main.go migrate",
     "db:setup": "docker-compose up -d postgres"
   },
@@ -47,5 +40,10 @@
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@8.15.0"
+  "packageManager": "pnpm@8.15.0",
+  "pnpm": {
+    "patchedDependencies": {
+      "@noble/hashes@1.8.0": "patches/@noble__hashes@1.8.0.patch"
+    }
+  }
 }

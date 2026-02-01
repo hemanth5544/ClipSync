@@ -186,6 +186,65 @@ export const api = {
     },
   },
 
+  secure: {
+    getVaultStatus: async (): Promise<{
+      exists: boolean;
+      salt?: string;
+      createdAt?: string;
+    }> => {
+      const response = await fetchWithAuth("/secure/vault");
+      return response.json();
+    },
+
+    createVault: async (): Promise<{ salt: string; createdAt: string }> => {
+      const response = await fetchWithAuth("/secure/vault", {
+        method: "POST",
+      });
+      return response.json();
+    },
+
+    getClips: async (): Promise<
+      Array<{
+        id: string;
+        encryptedPayload: string;
+        nonce: string;
+        createdAt: string;
+      }>
+    > => {
+      const response = await fetchWithAuth("/secure/clips");
+      return response.json();
+    },
+
+    createClip: async (encryptedPayload: string, nonce: string): Promise<{
+      id: string;
+      createdAt: string;
+    }> => {
+      const response = await fetchWithAuth("/secure/clips", {
+        method: "POST",
+        body: JSON.stringify({ encryptedPayload, nonce }),
+      });
+      return response.json();
+    },
+
+    updateClip: async (
+      id: string,
+      encryptedPayload: string,
+      nonce: string
+    ): Promise<{ id: string }> => {
+      const response = await fetchWithAuth(`/secure/clips/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ encryptedPayload, nonce }),
+      });
+      return response.json();
+    },
+
+    deleteClip: async (id: string): Promise<void> => {
+      await fetchWithAuth(`/secure/clips/${id}`, {
+        method: "DELETE",
+      });
+    },
+  },
+
   user: {
     getMe: async (): Promise<{
       id: string;
