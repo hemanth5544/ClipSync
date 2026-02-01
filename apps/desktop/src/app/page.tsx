@@ -6,7 +6,7 @@ import { useSession } from "@/lib/better-auth";
 import ClipList from "@/components/ClipList";
 import Sidebar from "@/components/Sidebar";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
-import { useClipboard } from "@/hooks/useClipboard";
+import { useClipboardContext } from "@/contexts/ClipboardContext";
 import { api } from "@/lib/api";
 import { CLIP_SAVED_EVENT } from "@/hooks/useClipboard";
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Textarea } from "@clipsync/ui";
@@ -26,7 +26,7 @@ export default function Home() {
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
   const refetchedOnce = useRef(false);
   const { toast } = useToast();
-  useClipboard();
+  const { saveFromClipboard, isWeb } = useClipboardContext();
 
   // After OAuth redirect, cookie may be set but first get-session can run before it.
   // Refetch once when we have no session so cross-domain cookie is picked up.
@@ -92,8 +92,8 @@ const isElectron = typeof window !== "undefined" && window.electronAPI;
       return;
     }
     try {
-      let deviceName = "Desktop";
-      if (window.electronAPI) {
+      let deviceName = "Web";
+      if (typeof window !== "undefined" && window.electronAPI) {
         const info = await window.electronAPI.getDeviceInfo();
         deviceName = info.name;
       }
@@ -121,6 +121,13 @@ const isElectron = typeof window !== "undefined" && window.electronAPI;
           onClearSearch={(e) => { e.stopPropagation(); setSearchQuery(""); }}
           showNewSnippet
           onNewSnippet={() => setAddSnippetOpen(true)}
+          onSaveFromClipboard={isWeb ? async () => {
+            const ok = await saveFromClipboard();
+            if (ok) toast({ title: "Saved", description: "Clipboard added to clips" });
+            else toast({ title: "Empty or failed", description: "Clipboard is empty or access denied", variant: "destructive" });
+            return ok;
+          } : undefined}
+          isWeb={isWeb}
           shortcutHint
         />
 
@@ -140,19 +147,18 @@ const isElectron = typeof window !== "undefined" && window.electronAPI;
             setSearchOverlayOpen(false);
           }}
           onSelectClip={async (clip: Clip) => {
-            if (typeof window !== "undefined" && window.electronAPI) {
-              await window.electronAPI.setClipboard(clip.content);
-              toast({ title: "Copied", description: "Content copied to clipboard" });
-            }
+            const ok = await import("@/lib/clipboard").then((m) => m.copyToClipboard(clip.content));
+            if (ok) toast({ title: "Copied", description: "Content copied to clipboard" });
+            else toast({ title: "Failed to copy", variant: "destructive" });
           }}
         />
-        {!isElectron && (
+        {/* {!isElectron && (
           <div className="p-4 bg-yellow-500/10 border-b border-yellow-500/20 flex-shrink-0">
             <p className="text-sm text-yellow-600 dark:text-yellow-400">
               ⚠️ Clipboard monitoring only works in Electron. Run: <code className="bg-black/10 px-1 rounded">pnpm electron:dev</code>
             </p>
           </div>
-        )}
+        )} */}
         <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-4">
           <ClipList searchQuery={searchQuery} />
         </main>

@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@clipsync/ui";
-import { X, Copy, Check, Heart, Pin, Trash2, Clock, Monitor, Code } from "lucide-react";
+import { X, Copy, Check, Heart, Pin, Trash2, Shield, Clock, Monitor, Code } from "lucide-react";
 import { Button } from "@clipsync/ui";
 import { useToast } from "@clipsync/ui";
 import { analyzeContent } from "@/lib/contentUtils";
@@ -24,6 +24,7 @@ interface ClipPreviewModalProps {
   onDelete: (clip: Clip) => void;
   onToggleFavorite: (clip: Clip) => void;
   onTogglePin: (clip: Clip) => void;
+  onMoveToSecure?: () => void;
 }
 
 export default function ClipPreviewModal({
@@ -33,6 +34,7 @@ export default function ClipPreviewModal({
   onDelete,
   onToggleFavorite,
   onTogglePin,
+  onMoveToSecure,
 }: ClipPreviewModalProps) {
   const { theme, resolvedTheme } = useTheme();
   const [copied, setCopied] = useState(false);
@@ -261,6 +263,19 @@ export default function ClipPreviewModal({
                 <Copy className="h-4 w-4" />
               )}
             </Button>
+            {onMoveToSecure && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  onMoveToSecure();
+                  onOpenChange(false);
+                }}
+                title="Move to Secure"
+              >
+                <Shield className="h-4 w-4" />
+              </Button>
+            )}
           </div>
           <Button
             variant="destructive"

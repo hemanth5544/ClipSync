@@ -38,7 +38,7 @@ export function ThemeToggle({ collapsed = false }: ThemeToggleProps) {
       onClick={toggle}
       title={isDark ? "Click for light" : "Click for dark"}
     >
-      <Icon className={collapsed ? "h-4 w-4" : "mr-2 h-4 w-4"} />
+      <Icon className={`${collapsed ? "h-4 w-4" : "mr-2 h-4 w-4"} ${!isDark ? "text-yellow-500 fill-yellow-500" : ""}`} />
       {!collapsed && "Theme"}
     </Button>
   );

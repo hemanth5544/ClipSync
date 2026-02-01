@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, Badge, Dialog, DialogContent,
 import { Heart, Copy, Trash2, Clock, Monitor, ChevronDown, ChevronUp, Check, ExternalLink } from "lucide-react";
 import { useToast } from "@clipsync/ui";
 import Sidebar from "@/components/Sidebar";
+import { useClipboardContext } from "@/contexts/ClipboardContext";
 import AppHeader from "@/components/AppHeader";
 import SearchOverlay from "@/components/SearchOverlay";
 import { formatRelativeTime } from "@/lib/timeUtils";
@@ -27,6 +28,7 @@ export default function FavoritesPage() {
   const [clipToDelete, setClipToDelete] = useState<Clip | null>(null);
   const [copiedClipId, setCopiedClipId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { saveFromClipboard, isWeb } = useClipboardContext();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -91,21 +93,16 @@ export default function FavoritesPage() {
 
   const handleCopy = async (content: string, clipId: string) => {
     try {
-      if (window.electronAPI) {
-        await window.electronAPI.setClipboard(content);
+      const ok = await import("@/lib/clipboard").then((m) => m.copyToClipboard(content));
+      if (ok) {
         setCopiedClipId(clipId);
         setTimeout(() => setCopiedClipId(null), 2000);
-        toast({
-          title: "Copied",
-          description: "Content copied to clipboard",
-        });
+        toast({ title: "Copied", description: "Content copied to clipboard" });
+      } else {
+        toast({ title: "Failed to copy", variant: "destructive" });
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to copy to clipboard",
-        variant: "destructive",
-      });
+    } catch {
+      toast({ title: "Error", description: "Failed to copy to clipboard", variant: "destructive" });
     }
   };
 
@@ -307,6 +304,13 @@ export default function FavoritesPage() {
             onClearSearch={(e) => { e.stopPropagation(); setSearchQuery(""); }}
             showNewSnippet
             onNewSnippet={() => setAddSnippetOpen(true)}
+            onSaveFromClipboard={isWeb ? async () => {
+              const ok = await saveFromClipboard();
+              if (ok) toast({ title: "Saved", description: "Clipboard added to clips" });
+              else toast({ title: "Empty or failed", description: "Clipboard is empty or access denied", variant: "destructive" });
+              return ok;
+            } : undefined}
+            isWeb={isWeb}
             pageTitle="Favorites"
             shortcutHint
           />
@@ -317,10 +321,9 @@ export default function FavoritesPage() {
             onNavigate={(path) => { router.push(path); setSearchOverlayOpen(false); }}
             onAddSnippet={() => { setAddSnippetOpen(true); setSearchOverlayOpen(false); }}
             onSelectClip={async (clip: Clip) => {
-              if (typeof window !== "undefined" && window.electronAPI) {
-                await window.electronAPI.setClipboard(clip.content);
-                toast({ title: "Copied", description: "Content copied to clipboard" });
-              }
+              const ok = await import("@/lib/clipboard").then((m) => m.copyToClipboard(clip.content));
+              if (ok) toast({ title: "Copied", description: "Content copied to clipboard" });
+              else toast({ title: "Failed to copy", variant: "destructive" });
             }}
           />
           {mainContent}

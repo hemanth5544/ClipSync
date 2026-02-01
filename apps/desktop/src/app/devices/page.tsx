@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/better-auth";
 import Sidebar from "@/components/Sidebar";
+import { useClipboardContext } from "@/contexts/ClipboardContext";
 import AppHeader from "@/components/AppHeader";
 import SearchOverlay from "@/components/SearchOverlay";
 import PairingCode from "@/components/PairingCode";
@@ -15,6 +16,7 @@ export default function DevicesPage() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
   const { toast } = useToast();
+  const { saveFromClipboard, isWeb } = useClipboardContext();
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
 
   useEffect(() => {
@@ -55,6 +57,13 @@ export default function DevicesPage() {
           onSearchClick={() => setSearchOverlayOpen(true)}
           onClearSearch={() => {}}
           showNewSnippet={false}
+          onSaveFromClipboard={isWeb ? async () => {
+            const ok = await saveFromClipboard();
+            if (ok) toast({ title: "Saved", description: "Clipboard added to clips" });
+            else toast({ title: "Empty or failed", variant: "destructive" });
+            return ok;
+          } : undefined}
+          isWeb={isWeb}
           pageTitle="Devices"
           shortcutHint
         />
@@ -65,10 +74,9 @@ export default function DevicesPage() {
           onNavigate={(path) => { router.push(path); setSearchOverlayOpen(false); }}
           onAddSnippet={() => setSearchOverlayOpen(false)}
           onSelectClip={async (clip: Clip) => {
-            if (typeof window !== "undefined" && window.electronAPI) {
-              await window.electronAPI.setClipboard(clip.content);
-              toast({ title: "Copied", description: "Content copied to clipboard" });
-            }
+            const ok = await import("@/lib/clipboard").then((m) => m.copyToClipboard(clip.content));
+            if (ok) toast({ title: "Copied", description: "Content copied to clipboard" });
+            else toast({ title: "Failed to copy", variant: "destructive" });
           }}
         />
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-4">

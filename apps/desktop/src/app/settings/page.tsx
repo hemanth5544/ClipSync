@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Switch, Label } from "@clipsync/ui";
 import Sidebar from "@/components/Sidebar";
+import { useClipboardContext } from "@/contexts/ClipboardContext";
 import AppHeader from "@/components/AppHeader";
 import SearchOverlay from "@/components/SearchOverlay";
 import { useToast } from "@clipsync/ui";
@@ -12,6 +13,7 @@ import { Clip } from "@clipsync/types";
 export default function SettingsPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { saveFromClipboard, isWeb } = useClipboardContext();
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
   const [autoStart, setAutoStart] = useState(false);
   const [syncInterval, setSyncInterval] = useState(300); // 5 minutes
@@ -71,6 +73,13 @@ export default function SettingsPage() {
           onSearchClick={() => setSearchOverlayOpen(true)}
           onClearSearch={() => {}}
           showNewSnippet={false}
+          onSaveFromClipboard={isWeb ? async () => {
+            const ok = await saveFromClipboard();
+            if (ok) toast({ title: "Saved", description: "Clipboard added to clips" });
+            else toast({ title: "Empty or failed", variant: "destructive" });
+            return ok;
+          } : undefined}
+          isWeb={isWeb}
           pageTitle="Settings"
           shortcutHint
         />
@@ -81,10 +90,9 @@ export default function SettingsPage() {
           onNavigate={(path) => { router.push(path); setSearchOverlayOpen(false); }}
           onAddSnippet={() => setSearchOverlayOpen(false)}
           onSelectClip={async (clip: Clip) => {
-            if (typeof window !== "undefined" && window.electronAPI) {
-              await window.electronAPI.setClipboard(clip.content);
-              toast({ title: "Copied", description: "Content copied to clipboard" });
-            }
+            const ok = await import("@/lib/clipboard").then((m) => m.copyToClipboard(clip.content));
+            if (ok) toast({ title: "Copied", description: "Content copied to clipboard" });
+            else toast({ title: "Failed to copy", variant: "destructive" });
           }}
         />
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-4">

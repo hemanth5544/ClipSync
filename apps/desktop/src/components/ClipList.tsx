@@ -3,14 +3,16 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { Clip } from "@clipsync/types";
 import { api } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@clipsync/ui";
+import { Card, CardContent, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input, Label } from "@clipsync/ui";
 import { ToastAction } from "@clipsync/ui";
-import { Heart, Copy, Trash2, Trash, Clock, Monitor, ChevronDown, ChevronUp, Check, ExternalLink, Pin, Maximize2, Code, FileText, List, LayoutGrid } from "lucide-react";
+import { Heart, Copy, Trash2, Trash, Clock, Monitor, ChevronDown, ChevronUp, Check, ExternalLink, Pin, Maximize2, Code, FileText, List, LayoutGrid, Shield } from "lucide-react";
 import { Button } from "@clipsync/ui";
 import { useToast } from "@clipsync/ui";
 import { CLIP_SAVED_EVENT } from "@/hooks/useClipboard";
 import { formatRelativeTime, getDateGroup, type DateGroup } from "@/lib/timeUtils";
+import { deriveKey, encryptPayload } from "@/lib/vaultCrypto";
 import { isURL, normalizeURL, openURL } from "@/lib/urlUtils";
+import { copyToClipboard } from "@/lib/clipboard";
 import { analyzeContent } from "@/lib/contentUtils";
 import ClipPreviewModal from "./ClipPreviewModal";
 import { ClipSkeletonList } from "./ClipSkeleton";
@@ -27,6 +29,9 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clipToDelete, setClipToDelete] = useState<Clip | null>(null);
   const [clearAllDialogOpen, setClearAllDialogOpen] = useState(false);
+  const [moveToSecureOpen, setMoveToSecureOpen] = useState(false);
+  const [clipToMoveSecure, setClipToMoveSecure] = useState<Clip | null>(null);
+  const [moveSecurePassword, setMoveSecurePassword] = useState("");
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [clipToPreview, setClipToPreview] = useState<Clip | null>(null);
   const [copiedClipId, setCopiedClipId] = useState<string | null>(null);
@@ -119,26 +124,20 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
 
   const handleCopy = async (content: string, clipId: string) => {
     try {
+      const ok = await copyToClipboard(content);
+      if (!ok) throw new Error("Copy failed");
+      setCopiedClipId(clipId);
+      setTimeout(() => setCopiedClipId(null), 2000);
+      toast({ title: "Copied", description: "Content copied to clipboard" });
+      // Electron: save to API so it appears in "latest copied" (clipboard monitor skips when we set)
       if (window.electronAPI) {
-        await window.electronAPI.setClipboard(content);
-        setCopiedClipId(clipId);
-        setTimeout(() => setCopiedClipId(null), 2000);
-        toast({
-          title: "Copied",
-          description: "Content copied to clipboard",
-        });
-        // Save to API so it appears in "latest copied" (Electron skips clipboard-changed when we set clipboard)
         const deviceName = (await window.electronAPI.getDeviceInfo()).name;
         const saved = await api.clips.create({ content, deviceName });
         window.dispatchEvent(new CustomEvent(CLIP_SAVED_EVENT, { detail: saved }));
         setClips((prev) => [saved, ...prev.filter((c) => c.id !== clipId)]);
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to copy to clipboard",
-        variant: "destructive",
-      });
+    } catch {
+      toast({ title: "Error", description: "Failed to copy to clipboard", variant: "destructive" });
     }
   };
 
@@ -184,6 +183,52 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
       toast({
         title: "Error",
         description: "Failed to clear clips",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleMoveToSecureClick = (clip: Clip) => {
+    setClipToMoveSecure(clip);
+    setMoveSecurePassword("");
+    setMoveToSecureOpen(true);
+  };
+
+  const handleMoveToSecureConfirm = async () => {
+    if (!clipToMoveSecure || !moveSecurePassword) return;
+    try {
+      const status = await api.secure.getVaultStatus();
+      if (!status.exists || !status.salt) {
+        toast({
+          title: "Set up Secure vault first",
+          description: "Go to Secure in the sidebar to create your vault.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const key = await deriveKey(moveSecurePassword, status.salt);
+      const raw = clipToMoveSecure.contentPreview || clipToMoveSecure.content;
+      const title = raw.length > 50 ? raw.slice(0, 50) + "…" : raw;
+      const { encryptedPayload, nonce } = await encryptPayload(key, {
+        title,
+        content: clipToMoveSecure.content,
+      });
+      await api.secure.createClip(encryptedPayload, nonce);
+      await api.clips.delete(clipToMoveSecure.id);
+      setClips((prev) => prev.filter((c) => c.id !== clipToMoveSecure.id));
+      setMoveToSecureOpen(false);
+      setClipToMoveSecure(null);
+      setMoveSecurePassword("");
+      setPreviewModalOpen(false);
+      setClipToPreview(null);
+      toast({
+        title: "Moved to Secure",
+        description: "Clip is now in your secure vault.",
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to move",
+        description: error instanceof Error ? error.message : "Wrong password or vault not set up.",
         variant: "destructive",
       });
     }
@@ -469,6 +514,14 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
                     <Button
                       variant="ghost"
                       size="icon"
+                      onClick={() => handleMoveToSecureClick(clip)}
+                      title="Move to Secure"
+                    >
+                      <Shield className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => handleCopy(clip.content, clip.id)}
                       className={isCopied ? "text-green-600 dark:text-green-400 bg-green-500/10" : ""}
                       title={isCopied ? "Copied!" : "Copy to clipboard"}
@@ -607,6 +660,59 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
         </DialogContent>
       </Dialog>
 
+      {/* Move to Secure Dialog */}
+      <Dialog
+        open={moveToSecureOpen}
+        onOpenChange={(open) => {
+          setMoveToSecureOpen(open);
+          if (!open) {
+            setClipToMoveSecure(null);
+            setMoveSecurePassword("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Move to Secure</DialogTitle>
+            <DialogDescription>
+              Enter your vault master password to move this clip to your secure vault. It will be
+              removed from All Clips.
+            </DialogDescription>
+          </DialogHeader>
+          {clipToMoveSecure && (
+            <div className="py-2">
+              <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                {clipToMoveSecure.contentPreview || clipToMoveSecure.content}
+              </p>
+              <Label htmlFor="move-secure-pw">Master password</Label>
+              <Input
+                id="move-secure-pw"
+                type="password"
+                value={moveSecurePassword}
+                onChange={(e) => setMoveSecurePassword(e.target.value)}
+                placeholder="Vault password"
+                onKeyDown={(e) => e.key === "Enter" && handleMoveToSecureConfirm()}
+              />
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setMoveToSecureOpen(false);
+                setClipToMoveSecure(null);
+                setMoveSecurePassword("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleMoveToSecureConfirm} disabled={!moveSecurePassword}>
+              Move to Secure
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
@@ -651,6 +757,7 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
         onDelete={handleDeleteClick}
         onToggleFavorite={handleToggleFavorite}
         onTogglePin={handleTogglePin}
+        onMoveToSecure={clipToPreview ? () => handleMoveToSecureClick(clipToPreview) : undefined}
       />
     </>
   );

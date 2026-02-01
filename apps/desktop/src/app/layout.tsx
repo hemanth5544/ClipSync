@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@clipsync/ui";
 import { Providers } from "./providers";
+import ClipboardPermissionBanner from "@/components/ClipboardPermissionBanner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,6 +21,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <Providers>
+          <ClipboardPermissionBanner />
           {children}
           <Toaster />
         </Providers>

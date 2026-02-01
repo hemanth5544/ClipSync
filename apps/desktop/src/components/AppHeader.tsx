@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@clipsync/ui";
-import { Search, Plus, X } from "lucide-react";
+import { Search, Plus, X, ClipboardPaste } from "lucide-react";
 
 interface AppHeaderProps {
   searchQuery: string;
@@ -9,6 +9,10 @@ interface AppHeaderProps {
   onClearSearch: (e: React.MouseEvent) => void;
   showNewSnippet?: boolean;
   onNewSnippet?: () => void;
+  /** Web mode: save current clipboard to clips (requires user click) */
+  onSaveFromClipboard?: () => void;
+  /** Whether we're in web (browser) mode */
+  isWeb?: boolean;
   /** Optional page title shown below the bar (e.g. "Favorites") */
   pageTitle?: string;
   /** Optional hint text, e.g. "Press ? for shortcuts" */
@@ -21,6 +25,8 @@ export default function AppHeader({
   onClearSearch,
   showNewSnippet = true,
   onNewSnippet,
+  onSaveFromClipboard,
+  isWeb = false,
   pageTitle,
   shortcutHint = false,
 }: AppHeaderProps) {
@@ -53,6 +59,18 @@ export default function AppHeader({
             </Button>
           )}
         </div>
+        {isWeb && onSaveFromClipboard && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onSaveFromClipboard()}
+            className="flex-shrink-0"
+            title="Save clipboard. Click once to allow access – then switching back to this tab will auto-save."
+          >
+            <ClipboardPaste className="h-4 w-4 mr-2" />
+            Save clipboard
+          </Button>
+        )}
         {showNewSnippet && onNewSnippet && (
           <Button onClick={onNewSnippet} className="flex-shrink-0" title="Add new snippet">
             <Plus className="h-4 w-4 mr-2" />

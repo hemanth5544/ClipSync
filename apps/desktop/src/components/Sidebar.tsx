@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "@/lib/better-auth";
 import { Button } from "@clipsync/ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@clipsync/ui";
-import { Settings, LogOut, Home, Star, Smartphone, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Settings, LogOut, Home, Star, Smartphone, Shield, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "./ThemeToggle";
 import { api } from "@/lib/api";
@@ -128,6 +128,15 @@ export default function Sidebar() {
           >
             <Smartphone className={collapsed ? "h-4 w-4" : "mr-2 h-4 w-4"} />
             {!collapsed && "Devices"}
+          </Button>
+        </Link>
+        <Link href="/secure" title={collapsed ? "Secure" : undefined}>
+          <Button
+            variant={pathname === "/secure" ? "secondary" : "ghost"}
+            className={`w-full ${collapsed ? "justify-center p-2" : "justify-start"}`}
+          >
+            <Shield className={`${collapsed ? "h-4 w-4" : "mr-2 h-4 w-4"} ${pathname === "/secure" ? "text-green-500 fill-green-500" : ""}`} />
+            {!collapsed && "Secure"}
           </Button>
         </Link>
         <ThemeToggle collapsed={collapsed} />
