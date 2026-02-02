@@ -92,7 +92,10 @@ module.exports = {
       };
     })(),
     plugins: [
-      "expo-secure-store"
+      "expo-secure-store",
+      ["expo-camera", {
+        "cameraPermission": "ClipSync needs camera access to scan the pairing QR code from your desktop app."
+      }]
     ]
   }
 };

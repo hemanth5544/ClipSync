@@ -22,6 +22,7 @@
     "electron:dev:network": "cd apps/desktop && pnpm electron:dev:network",
     "electron:build": "cd apps/desktop && pnpm electron:build",
     "mobile:start": "cd apps/mobile && pnpm start",
+    "mobile:start:offline": "cd apps/mobile && pnpm start:offline",
     "mobile:start:clear": "cd apps/mobile && pnpm start:clear",
     "mobile:android": "cd apps/mobile && pnpm android",
     "mobile:ios": "cd apps/mobile && pnpm ios",
