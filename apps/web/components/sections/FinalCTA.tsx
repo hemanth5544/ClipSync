@@ -11,7 +11,7 @@ export function FinalCTA() {
       className="relative py-24 md:py-32"
       aria-labelledby="cta-heading"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary-from)]/15 via-[var(--primary-to)]/10 to-violet-200/20" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary-from)]/15 via-[var(--primary-to)]/10 to-amber-200/20" />
       <div className="absolute inset-0 noise-overlay" />
       <div className="container relative mx-auto px-4 text-center">
         <motion.div
@@ -34,7 +34,7 @@ export function FinalCTA() {
             <Button
               asChild
               size="lg"
-              className="h-14 bg-gradient-to-r from-[var(--primary-from)] to-[var(--primary-to)] px-10 text-lg font-semibold text-white shadow-lg shadow-violet-500/35 transition-all hover:opacity-90 hover:shadow-violet-500/45"
+              className="h-14 bg-gradient-to-r from-[var(--primary-from)] to-[var(--primary-to)] px-10 text-lg font-semibold text-white shadow-lg shadow-amber-500/35 transition-all hover:opacity-90 hover:shadow-amber-500/45"
             >
               <Link href="/#download">Download for Free</Link>
             </Button>

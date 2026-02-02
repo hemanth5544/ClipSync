@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Clipboard, Menu, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { Button } from '@clipsync/ui'
 import { ThemeToggle } from '@/components/ThemeToggle'
 
@@ -44,13 +44,10 @@ export function Nav() {
         <nav className="flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
         <Link
           href="/"
-          className="flex items-center gap-2 text-lg font-semibold text-[var(--text-primary)] transition-opacity hover:opacity-90"
+          className="font-display text-xl font-bold tracking-tight gradient-text transition-opacity hover:opacity-90"
           aria-label="ClipSync Home"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--primary-from)] to-[var(--primary-to)]">
-            <Clipboard className="h-5 w-5 text-[var(--primary-foreground)]" aria-hidden />
-          </div>
-          <span className="font-display font-semibold">ClipSync</span>
+          ClipSync
         </Link>
 
         <div className="hidden md:flex md:items-center md:gap-8">
@@ -77,7 +74,7 @@ export function Nav() {
 
         <button
           type="button"
-          className="md:hidden rounded-lg p-2 text-[var(--text-primary)] hover:bg-violet-500/10"
+          className="md:hidden rounded-lg p-2 text-[var(--text-primary)] hover:bg-amber-500/10"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-expanded={mobileOpen}
           aria-label="Toggle menu"
@@ -101,7 +98,7 @@ export function Nav() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="rounded-lg px-4 py-3 text-sm font-medium text-[var(--text-primary)] hover:bg-violet-500/10"
+                  className="rounded-lg px-4 py-3 text-sm font-medium text-[var(--text-primary)] hover:bg-amber-500/10"
                   onClick={() => setMobileOpen(false)}
                 >
                   {link.label}

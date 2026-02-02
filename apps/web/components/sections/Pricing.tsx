@@ -124,9 +124,9 @@ export function Pricing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-className={`relative flex flex-col rounded-2xl border bg-[var(--surface)] p-8 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/15 ${
+className={`relative flex flex-col rounded-2xl border bg-[var(--surface)] p-8 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/15 ${
                   tier.highlighted
-                  ? 'border-[var(--primary-from)] shadow-lg shadow-violet-500/25'
+                  ? 'border-[var(--primary-from)] shadow-lg shadow-amber-500/25'
                   : 'border-[var(--border)]'
               }`}
             >

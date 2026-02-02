@@ -72,7 +72,7 @@ export function FAQ() {
               <button
                 type="button"
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="flex w-full items-center justify-between px-6 py-4 text-left font-medium text-[var(--text-primary)] hover:bg-violet-500/10 transition-colors"
+                className="flex w-full items-center justify-between px-6 py-4 text-left font-medium text-[var(--text-primary)] hover:bg-amber-500/10 transition-colors"
                 aria-expanded={openIndex === index}
               >
                 {faq.question}

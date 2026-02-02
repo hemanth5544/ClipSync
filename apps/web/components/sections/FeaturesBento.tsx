@@ -17,8 +17,8 @@ const features = [
     description: 'Copy on one device, paste on another. Your clipboard follows you everywhere in real time. No setup, no delay.',
     icon: Zap,
     size: 'large' as const,
-    gradient: 'from-violet-500/15 to-purple-500/15',
-    iconGradient: 'from-violet-500 to-purple-600',
+    gradient: 'from-amber-500/15 to-orange-500/15',
+    iconGradient: 'from-amber-500 to-orange-600',
   },
   {
     id: 'secure',
@@ -26,8 +26,8 @@ const features = [
     description: 'End-to-end encryption. Your clips are never stored in plain text.',
     icon: Lock,
     size: 'small' as const,
-    gradient: 'from-violet-500/10 to-indigo-500/10',
-    iconGradient: 'from-violet-500 to-indigo-600',
+    gradient: 'from-amber-500/10 to-orange-500/10',
+    iconGradient: 'from-amber-500 to-orange-600',
   },
   {
     id: 'search',
@@ -35,8 +35,8 @@ const features = [
     description: 'Find any clip in milliseconds. Filter by type, date, or full-text.',
     icon: Search,
     size: 'small' as const,
-    gradient: 'from-purple-500/10 to-violet-500/10',
-    iconGradient: 'from-purple-500 to-violet-600',
+    gradient: 'from-orange-500/10 to-amber-500/10',
+    iconGradient: 'from-orange-500 to-amber-600',
   },
   {
     id: 'organize',
@@ -123,7 +123,7 @@ export function FeaturesBento() {
               <motion.div
                 key={feature.id}
                 variants={item}
-                className={`group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-white/80 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg hover:shadow-violet-500/15 dark:bg-zinc-800/90 dark:border-zinc-700 dark:hover:border-zinc-600 dark:hover:shadow-zinc-500/10 ${
+                className={`group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-white/80 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/15 dark:bg-zinc-800/90 dark:border-zinc-700 dark:hover:border-zinc-600 dark:hover:shadow-zinc-500/10 ${
                   isLarge
                     ? 'md:col-span-2 md:row-span-3 md:flex md:flex-col md:justify-center md:p-8'
                     : ''

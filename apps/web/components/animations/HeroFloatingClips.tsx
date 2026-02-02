@@ -23,14 +23,14 @@ export function HeroFloatingClips() {
             ease: [0.4, 0, 0.2, 1],
           }}
           whileHover={{ scale: 1.02, y: -4 }}
-          className={`group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-white/90 px-5 py-4 shadow-lg backdrop-blur-md transition-all duration-300 hover:border-violet-300 hover:shadow-xl hover:shadow-violet-500/20 dark:bg-zinc-800/95 dark:border-zinc-700 dark:hover:border-zinc-500 dark:hover:shadow-zinc-500/10 ${
+          className={`group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-white/90 px-5 py-4 shadow-lg backdrop-blur-md transition-all duration-300 hover:border-amber-300 hover:shadow-xl hover:shadow-amber-500/20 dark:bg-zinc-800/95 dark:border-zinc-700 dark:hover:border-zinc-500 dark:hover:shadow-zinc-500/10 ${
             clip.size === 'wide' ? 'sm:col-span-2' : ''
           }`}
           style={{
-            boxShadow: '0 20px 40px -15px rgba(124, 58, 237, 0.12), 0 0 0 1px rgba(124, 58, 237, 0.05)',
+            boxShadow: '0 20px 40px -15px rgba(217, 119, 6, 0.12), 0 0 0 1px rgba(217, 119, 6, 0.05)',
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-zinc-500/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-zinc-500/10" />
           <motion.p
             className="relative font-mono text-sm text-[var(--text-primary)] sm:text-base"
             animate={{ x: [0, clip.x, 0] }}

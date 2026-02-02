@@ -49,7 +49,7 @@ export function Hero() {
       {/* Animated gradient background */}
       <div className="absolute inset-0 hero-gradient-mesh" />
       <div className="absolute inset-0 spotlight" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_-20%,rgba(124,58,237,0.1),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_-20%,rgba(217,119,6,0.1),transparent_50%)]" />
       <div className="absolute inset-0 noise-overlay" />
 
       <div className="container relative z-10 mx-auto flex max-w-5xl flex-col items-center text-center">
@@ -82,7 +82,7 @@ export function Hero() {
             >
               {/* Single clip icon on hover – above the word Clipboard */}
               <motion.span
-                className="absolute bottom-full left-1/2 z-10 mb-2 flex -translate-x-1/2 items-center justify-center rounded-xl border border-violet-300 bg-white p-2 shadow-lg shadow-violet-500/20 dark:bg-zinc-800 dark:border-zinc-600"
+                className="absolute bottom-full left-1/2 z-10 mb-2 flex -translate-x-1/2 items-center justify-center rounded-xl border border-amber-200 bg-white p-2 shadow-lg shadow-amber-500/20 dark:bg-zinc-800 dark:border-zinc-600"
                 initial={false}
                 animate={{
                   opacity: clipboardHovered ? 1 : 0,
@@ -142,7 +142,7 @@ export function Hero() {
             <Button
               asChild
               size="lg"
-              className="h-12 w-full min-w-[200px] bg-gradient-to-r from-[var(--primary-from)] to-[var(--primary-to)] px-8 text-base font-semibold text-white shadow-lg shadow-violet-500/30 transition-all duration-300 hover:scale-[1.02] hover:opacity-95 hover:shadow-violet-500/40 sm:w-auto"
+              className="h-12 w-full min-w-[200px] bg-gradient-to-r from-[var(--primary-from)] to-[var(--primary-to)] px-8 text-base font-semibold text-white shadow-lg shadow-amber-500/30 transition-all duration-300 hover:scale-[1.02] hover:opacity-95 hover:shadow-amber-500/40 sm:w-auto"
             >
               <Link href="/#download" className="flex items-center justify-center gap-2">
                 <Download className="h-5 w-5" aria-hidden />
@@ -153,7 +153,7 @@ export function Hero() {
               asChild
               variant="ghost"
               size="lg"
-              className="h-12 w-full min-w-[160px] gap-2 rounded-xl border border-[var(--border)] bg-white/60 text-[var(--text-primary)] backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:border-violet-300 hover:bg-violet-500/10 dark:bg-zinc-800/80 dark:border-zinc-600 dark:hover:bg-zinc-700 sm:w-auto"
+              className="h-12 w-full min-w-[160px] gap-2 rounded-xl border border-[var(--border)] bg-white/60 text-[var(--text-primary)] backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:border-amber-300 hover:bg-amber-500/10 dark:bg-zinc-800/80 dark:border-zinc-600 dark:hover:bg-zinc-700 sm:w-auto"
             >
               <Link href="/#demo" className="flex items-center justify-center gap-2">
                 <Play className="h-5 w-5" aria-hidden />
@@ -184,7 +184,7 @@ export function Hero() {
       {/* Scroll indicator */}
       <motion.a
         href="#features"
-        className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 rounded-full px-4 py-2 text-[var(--text-secondary)] transition-colors hover:bg-violet-500/10 hover:text-[var(--primary-from)]"
+        className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 rounded-full px-4 py-2 text-[var(--text-secondary)] transition-colors hover:bg-amber-500/10 hover:text-[var(--primary-from)]"
         aria-label="Scroll to features"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

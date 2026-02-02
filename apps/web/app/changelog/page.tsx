@@ -116,7 +116,7 @@ export default function ChangelogPage() {
                                 key={i}
                                 className="flex items-start gap-3 text-sm text-[var(--text-secondary)]"
                               >
-                                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded bg-violet-100 text-[var(--primary-from)]">
+                                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded bg-amber-100 text-[var(--primary-from)]">
                                   <Icon className="h-3 w-3" aria-hidden />
                                 </span>
                                 <span>{item.text}</span>

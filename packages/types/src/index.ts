@@ -28,6 +28,24 @@ export interface SyncSession {
   lastSync: string;
 }
 
+export interface SyncedMessage {
+  id: string;
+  userId: string;
+  body: string;
+  sender: string;
+  address: string;
+  receivedAt: string;
+  deviceId: string;
+  createdAt: string;
+}
+
+export interface PushMessageItem {
+  body: string;
+  sender?: string;
+  address?: string;
+  receivedAt: string;
+}
+
 export interface CreateClipRequest {
   content: string;
   deviceName?: string;
