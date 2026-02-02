@@ -17,6 +17,10 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: 'ClipSync — Your Clipboard, Everywhere',
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icon.svg',
+  },
   description:
     'Never lose what you copy. Sync your clipboard across all devices instantly. Secure, fast, and beautifully simple.',
   keywords: ['clipboard', 'sync', 'productivity', 'cross-platform', 'cloud clipboard'],

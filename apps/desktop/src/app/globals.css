@@ -49,6 +49,14 @@
   }
 }
 
+/* Logo gradient text (matches web branding) */
+.gradient-text {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 @layer base {
   * {
     @apply border-border;

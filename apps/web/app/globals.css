@@ -4,24 +4,24 @@
 
 @layer base {
   :root {
-    /* Primary - Violet palette */
-    --primary-from: #7c3aed;
-    --primary-to: #a78bfa;
-    --primary: #7c3aed;
+    /* Primary - Amber/orange (works in light & dark) */
+    --primary-from: #d97706;
+    --primary-to: #f59e0b;
+    --primary: #ea580c;
     --primary-foreground: #ffffff;
 
-    /* Accents - violet shades */
-    --accent-cyan: #a78bfa;
-    --accent-pink: #c4b5fd;
+    /* Accents - warm amber shades */
+    --accent-cyan: #fbbf24;
+    --accent-pink: #fcd34d;
 
     /* White & light neutrals */
     --background: #ffffff;
-    --surface: #faf5ff;
-    --border: #e9e0f5;
-    --text-primary: #1e1b4b;
+    --surface: #fffbeb;
+    --border: #fef3c7;
+    --text-primary: #1c1917;
     --text-secondary: #6b7280;
-    --input: #e9e0f5;
-    --ring: #7c3aed;
+    --input: #fef3c7;
+    --ring: #d97706;
 
     /* Radius */
     --radius: 0.75rem;
@@ -32,7 +32,7 @@
     --ease-out: cubic-bezier(0, 0, 0.2, 1);
   }
 
-  /* Dark mode: black & silver */
+  /* Dark mode: black & amber accent */
   .dark {
     --background: #0a0a0a;
     --surface: #141414;
@@ -40,12 +40,12 @@
     --border: #2a2a2a;
     --text-primary: #fafafa;
     --text-secondary: #a3a3a3;
-    --primary-from: #a3a3a3;
-    --primary-to: #d4d4d4;
-    --primary: #d4d4d4;
+    --primary-from: #f59e0b;
+    --primary-to: #fbbf24;
+    --primary: #f59e0b;
     --primary-foreground: #0a0a0a;
     --input: #262626;
-    --ring: #a3a3a3;
+    --ring: #f59e0b;
   }
 }
 
@@ -109,35 +109,35 @@
   background: rgba(20, 20, 20, 0.85);
 }
 
-/* Spotlight gradient - violet glow (light) / silver (dark) */
+/* Spotlight gradient - amber glow (light & dark) */
 .spotlight {
   background: radial-gradient(
     ellipse 80% 50% at 50% -20%,
-    rgba(124, 58, 237, 0.12),
+    rgba(217, 119, 6, 0.12),
     transparent
   );
 }
 .dark .spotlight {
   background: radial-gradient(
     ellipse 80% 50% at 50% -20%,
-    rgba(163, 163, 163, 0.08),
+    rgba(245, 158, 11, 0.1),
     transparent
   );
 }
 
-/* Hero gradient mesh - animated (violet light / silver dark) */
+/* Hero gradient mesh - animated (amber light & dark) */
 .hero-gradient-mesh {
   background:
-    radial-gradient(ellipse 60% 50% at 20% 40%, rgba(124, 58, 237, 0.15), transparent 50%),
-    radial-gradient(ellipse 50% 40% at 80% 60%, rgba(167, 139, 250, 0.12), transparent 50%),
-    radial-gradient(ellipse 40% 30% at 50% 80%, rgba(196, 181, 253, 0.08), transparent 50%);
+    radial-gradient(ellipse 60% 50% at 20% 40%, rgba(217, 119, 6, 0.12), transparent 50%),
+    radial-gradient(ellipse 50% 40% at 80% 60%, rgba(245, 158, 11, 0.1), transparent 50%),
+    radial-gradient(ellipse 40% 30% at 50% 80%, rgba(251, 191, 36, 0.08), transparent 50%);
   animation: gradient-shift 12s ease-in-out infinite alternate;
 }
 .dark .hero-gradient-mesh {
   background:
-    radial-gradient(ellipse 60% 50% at 20% 40%, rgba(163, 163, 163, 0.06), transparent 50%),
-    radial-gradient(ellipse 50% 40% at 80% 60%, rgba(212, 212, 212, 0.05), transparent 50%),
-    radial-gradient(ellipse 40% 30% at 50% 80%, rgba(163, 163, 163, 0.04), transparent 50%);
+    radial-gradient(ellipse 60% 50% at 20% 40%, rgba(245, 158, 11, 0.08), transparent 50%),
+    radial-gradient(ellipse 50% 40% at 80% 60%, rgba(251, 191, 36, 0.06), transparent 50%),
+    radial-gradient(ellipse 40% 30% at 50% 80%, rgba(245, 158, 11, 0.04), transparent 50%);
 }
 @keyframes gradient-shift {
   0% { opacity: 1; transform: scale(1); }

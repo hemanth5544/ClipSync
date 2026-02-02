@@ -60,7 +60,7 @@ module.exports = {
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       package: "com.clipsync.mobile",
-      permissions: ["CLIPBOARD_READ", "CLIPBOARD_WRITE"],
+      permissions: ["CLIPBOARD_READ", "CLIPBOARD_WRITE", "READ_SMS", "RECEIVE_SMS"],
       intentFilters: [
         {
           action: "VIEW",

@@ -30,7 +30,9 @@
     "web:build": "cd apps/web && pnpm build",
     "web:start": "cd apps/web && pnpm start",
     "db:migrate": "cd apps/backend && go run cmd/server/main.go migrate",
-    "db:setup": "docker-compose up -d postgres"
+    "db:setup": "docker-compose up -d postgres",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "devDependencies": {
     "turbo": "^2.0.0",
@@ -45,5 +47,10 @@
     "patchedDependencies": {
       "@noble/hashes@1.8.0": "patches/@noble__hashes@1.8.0.patch"
     }
+  },
+  "dependencies": {
+    "expo": "~54.0.33",
+    "react": "19.1.0",
+    "react-native": "0.81.5"
   }
 }

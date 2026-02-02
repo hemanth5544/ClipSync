@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="mobile-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="205" fill="url(#mobile-grad)"/>
+  <text x="512" y="700" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="520" font-weight="700" text-anchor="middle">C</text>
+</svg>
