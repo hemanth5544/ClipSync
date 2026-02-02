@@ -229,15 +229,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 24,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 32,
   },
   section: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    padding: 20,
+    marginBottom: 16,
+    borderRadius: 16,
+    backgroundColor: "#f8f8f8",
+    overflow: "hidden",
   },
   sectionDark: {
-    borderBottomColor: "#333",
+    backgroundColor: "#111",
   },
   sectionTitle: {
     fontSize: 18,

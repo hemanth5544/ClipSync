@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "cross-env NODE_OPTIONS='--no-experimental-strip-types' expo start",
+    "start:offline": "cross-env NODE_OPTIONS='--no-experimental-strip-types' expo start --offline",
     "start:clear": "cross-env NODE_OPTIONS='--no-experimental-strip-types' expo start --clear",
     "android": "cross-env NODE_OPTIONS='--no-experimental-strip-types' expo start --android",
     "ios": "cross-env NODE_OPTIONS='--no-experimental-strip-types' expo start --ios",
@@ -27,6 +28,7 @@
     "dotenv": "^16.4.5",
     "expo": "~54.0.33",
     "expo-clipboard": "~8.0.8",
+    "expo-camera": "~17.0.10",
     "expo-constants": "~18.0.13",
     "expo-device": "~8.0.10",
     "expo-font": "~14.0.11",

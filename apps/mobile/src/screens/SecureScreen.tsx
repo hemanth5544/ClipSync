@@ -11,6 +11,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  InteractionManager,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -42,6 +43,8 @@ export default function SecureScreen() {
   const [addTitle, setAddTitle] = useState("");
   const [addContent, setAddContent] = useState("");
   const [showPasswords, setShowPasswords] = useState<Set<string>>(new Set());
+  const [unlocking, setUnlocking] = useState(false);
+  const [settingUp, setSettingUp] = useState(false);
   const keyRef = useRef<Uint8Array | null>(null);
 
   const bg = isDark ? "#000" : "#fff";
@@ -103,39 +106,55 @@ export default function SecureScreen() {
       Alert.alert("Passwords don't match", "Please confirm your password");
       return;
     }
-    try {
-      const { salt: newSalt } = await api.secure.createVault();
-      setSalt(newSalt);
-      setVaultExists(true);
-      const key = await deriveKey(masterPassword, newSalt);
-      keyRef.current = key;
-      setUnlocked(true);
-      setSetupOpen(false);
-      setMasterPassword("");
-      setConfirmPassword("");
-      await loadClips(key);
-      Alert.alert("Success", "Secure vault created");
-    } catch (error) {
-      Alert.alert("Error", error instanceof Error ? error.message : "Failed to create vault");
-    }
+    setSettingUp(true);
+    InteractionManager.runAfterInteractions(() => {
+      (async () => {
+        try {
+          const { salt: newSalt } = await api.secure.createVault();
+          setSalt(newSalt);
+          setVaultExists(true);
+          const key = await deriveKey(masterPassword, newSalt);
+          keyRef.current = key;
+          setUnlocked(true);
+          setSetupOpen(false);
+          setMasterPassword("");
+          setConfirmPassword("");
+          await loadClips(key);
+          setTimeout(() => Alert.alert("Success", "Secure vault created"), 100);
+        } catch (error) {
+          Alert.alert("Error", error instanceof Error ? error.message : "Failed to create vault");
+        } finally {
+          setSettingUp(false);
+        }
+      })();
+    });
   };
 
   const handleUnlock = async () => {
     if (!masterPassword || !salt) return;
-    try {
-      const key = await deriveKey(masterPassword, salt);
-      await loadClips(key);
-      keyRef.current = key;
-      setUnlocked(true);
-      setUnlockOpen(false);
-      setMasterPassword("");
-      Alert.alert("Success", "Vault unlocked");
-    } catch (error) {
-      setUnlocked(false);
-      keyRef.current = null;
-      setClips([]);
-      Alert.alert("Wrong password", "Please try again");
-    }
+    const password = masterPassword;
+    setUnlocking(true);
+    // Yield to UI so "Unlocking…" and spinner paint before heavy crypto work
+    InteractionManager.runAfterInteractions(() => {
+      (async () => {
+        try {
+          const key = await deriveKey(password, salt!);
+          await loadClips(key);
+          keyRef.current = key;
+          setUnlocked(true);
+          setUnlockOpen(false);
+          setMasterPassword("");
+          setTimeout(() => Alert.alert("Success", "Vault unlocked"), 100);
+        } catch (error) {
+          setUnlocked(false);
+          keyRef.current = null;
+          setClips([]);
+          Alert.alert("Wrong password", "Please try again");
+        } finally {
+          setUnlocking(false);
+        }
+      })();
+    });
   };
 
   const handleLock = () => {
@@ -286,69 +305,90 @@ export default function SecureScreen() {
         )}
       </ScrollView>
 
-      {/* Setup Modal */}
-      <Modal visible={setupOpen} transparent animationType="slide">
-        <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <View style={[styles.modalContent, { backgroundColor: bg }]}>
+      {/* Setup Modal - centered */}
+      <Modal visible={setupOpen} transparent animationType="fade">
+        <KeyboardAvoidingView style={styles.modalOverlayCentered} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <View style={[styles.modalContentCentered, { backgroundColor: bg }]}>
             <Text style={[styles.modalTitle, { color: text }]}>Create master password</Text>
             <Text style={[styles.modalDesc, { color: muted }]}>We never store it. You need it to unlock.</Text>
-            <TextInput
-              style={[styles.input, { backgroundColor: cardBg, color: text }]}
-              placeholder="Min 6 characters"
-              placeholderTextColor={muted}
-              secureTextEntry
-              value={masterPassword}
-              onChangeText={setMasterPassword}
-            />
-            <TextInput
-              style={[styles.input, { backgroundColor: cardBg, color: text }]}
-              placeholder="Confirm password"
-              placeholderTextColor={muted}
-              secureTextEntry
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-            />
-            <View style={styles.modalBtns}>
-              <TouchableOpacity style={[styles.btn, { borderColor: muted }]} onPress={() => setSetupOpen(false)}>
-                <Text style={{ color: text }}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.btn, styles.btnPrimary]} onPress={handleSetup}>
-                <Text style={styles.btnPrimaryText}>Create</Text>
-              </TouchableOpacity>
-            </View>
+            {settingUp ? (
+              <View style={styles.modalLoading}>
+                <ActivityIndicator size="large" color={isDark ? "#a78bfa" : "#7c3aed"} />
+                <Text style={[styles.modalLoadingText, { color: muted }]}>Creating vault…</Text>
+              </View>
+            ) : (
+              <>
+                <TextInput
+                  style={[styles.input, { backgroundColor: cardBg, color: text }]}
+                  placeholder="Min 6 characters"
+                  placeholderTextColor={muted}
+                  secureTextEntry
+                  value={masterPassword}
+                  onChangeText={setMasterPassword}
+                  editable={!settingUp}
+                />
+                <TextInput
+                  style={[styles.input, { backgroundColor: cardBg, color: text }]}
+                  placeholder="Confirm password"
+                  placeholderTextColor={muted}
+                  secureTextEntry
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  editable={!settingUp}
+                />
+                <View style={styles.modalBtns}>
+                  <TouchableOpacity style={[styles.btn, { borderColor: muted }]} onPress={() => setSetupOpen(false)} disabled={settingUp}>
+                    <Text style={{ color: text }}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.btn, styles.btnPrimary]} onPress={handleSetup} disabled={settingUp}>
+                    <Text style={styles.btnPrimaryText}>Create</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
           </View>
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Unlock Modal */}
-      <Modal visible={unlockOpen} transparent animationType="slide">
-        <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <View style={[styles.modalContent, { backgroundColor: bg }]}>
+      {/* Unlock Modal - centered */}
+      <Modal visible={unlockOpen} transparent animationType="fade">
+        <KeyboardAvoidingView style={styles.modalOverlayCentered} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <View style={[styles.modalContentCentered, { backgroundColor: bg }]}>
             <Text style={[styles.modalTitle, { color: text }]}>Unlock vault</Text>
-            <TextInput
-              style={[styles.input, { backgroundColor: cardBg, color: text }]}
-              placeholder="Master password"
-              placeholderTextColor={muted}
-              secureTextEntry
-              value={masterPassword}
-              onChangeText={setMasterPassword}
-            />
-            <View style={styles.modalBtns}>
-              <TouchableOpacity style={[styles.btn, { borderColor: muted }]} onPress={() => setUnlockOpen(false)}>
-                <Text style={{ color: text }}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.btn, styles.btnPrimary]} onPress={handleUnlock}>
-                <Text style={styles.btnPrimaryText}>Unlock</Text>
-              </TouchableOpacity>
-            </View>
+            {unlocking ? (
+              <View style={styles.modalLoading}>
+                <ActivityIndicator size="large" color={isDark ? "#a78bfa" : "#7c3aed"} />
+                <Text style={[styles.modalLoadingText, { color: muted }]}>Unlocking…</Text>
+              </View>
+            ) : (
+              <>
+                <TextInput
+                  style={[styles.input, { backgroundColor: cardBg, color: text }]}
+                  placeholder="Master password"
+                  placeholderTextColor={muted}
+                  secureTextEntry
+                  value={masterPassword}
+                  onChangeText={setMasterPassword}
+                  editable={!unlocking}
+                />
+                <View style={styles.modalBtns}>
+                  <TouchableOpacity style={[styles.btn, { borderColor: muted }]} onPress={() => setUnlockOpen(false)} disabled={unlocking}>
+                    <Text style={{ color: text }}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.btn, styles.btnPrimary]} onPress={handleUnlock} disabled={unlocking}>
+                    <Text style={styles.btnPrimaryText}>Unlock</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
           </View>
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Add password Modal */}
-      <Modal visible={addOpen} transparent animationType="slide">
-        <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <View style={[styles.modalContent, { backgroundColor: bg }]}>
+      {/* Add password Modal - centered */}
+      <Modal visible={addOpen} transparent animationType="fade">
+        <KeyboardAvoidingView style={styles.modalOverlayCentered} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <View style={[styles.modalContentCentered, { backgroundColor: bg }]}>
             <Text style={[styles.modalTitle, { color: text }]}>Add password</Text>
             <TextInput
               style={[styles.input, { backgroundColor: cardBg, color: text }]}
@@ -388,11 +428,13 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   scroll: { flex: 1 },
-  scrollContent: { padding: 16, paddingBottom: 32 },
+  scrollContent: { padding: 20, paddingBottom: 40 },
   card: {
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 20,
+    overflow: "hidden",
+    ...(Platform.OS === "android" ? { elevation: 2 } : {}),
   },
   cardIcon: { marginBottom: 12 },
   cardTitle: { fontSize: 18, fontWeight: "600", marginBottom: 8 },
@@ -428,9 +470,11 @@ const styles = StyleSheet.create({
   emptyText: { textAlign: "center", marginBottom: 8 },
   link: { textAlign: "center", fontSize: 14 },
   clipCard: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 14,
+    padding: 18,
+    marginBottom: 14,
+    overflow: "hidden",
+    ...(Platform.OS === "android" ? { elevation: 1 } : {}),
   },
   clipHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
   clipTitle: { fontSize: 16, fontWeight: "600", flex: 1 },
@@ -441,11 +485,33 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "flex-end",
   },
+  modalOverlayCentered: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
   modalContent: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 24,
     paddingBottom: 40,
+  },
+  modalContentCentered: {
+    borderRadius: 20,
+    padding: 24,
+    width: "100%",
+    maxWidth: 400,
+  },
+  modalLoading: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 24,
+    gap: 12,
+  },
+  modalLoadingText: {
+    fontSize: 14,
   },
   modalTitle: { fontSize: 20, fontWeight: "600", marginBottom: 8 },
   modalDesc: { fontSize: 14, marginBottom: 20 },
