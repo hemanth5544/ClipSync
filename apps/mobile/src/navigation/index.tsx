@@ -25,20 +25,27 @@ function TabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: isDark ? "#fff" : "#3b82f6",
-        tabBarInactiveTintColor: isDark ? "#666" : "#666",
+        tabBarActiveTintColor: isDark ? "#60a5fa" : "#2563eb",
+        tabBarInactiveTintColor: isDark ? "#6b7280" : "#9ca3af",
         tabBarStyle: {
-          backgroundColor: isDark ? "#000" : "#fff",
-          borderTopColor: isDark ? "#333" : "#e5e5e5",
-          paddingTop: 8,
-          paddingBottom: Platform.OS === "ios" ? Math.max(insets.bottom, 8) : 8,
-          height: 56 + (Platform.OS === "ios" ? insets.bottom : 0),
+          backgroundColor: isDark ? "#0a0a0a" : "#fafafa",
+          borderTopColor: isDark ? "#262626" : "#e5e7eb",
+          borderTopWidth: 1,
+          paddingTop: 10,
+          paddingBottom: Platform.OS === "ios" ? Math.max(insets.bottom, 10) : 10,
+          height: 58 + (Platform.OS === "ios" ? insets.bottom : 0),
         },
-        tabBarLabelStyle: { fontSize: 12, fontWeight: "500" },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
+        tabBarIconStyle: { marginBottom: -2 },
         headerStyle: {
-          backgroundColor: isDark ? "#000" : "#fff",
+          backgroundColor: isDark ? "#0a0a0a" : "#fafafa",
+          borderBottomWidth: 1,
+          borderBottomColor: isDark ? "#262626" : "#e5e7eb",
         },
-        headerTintColor: isDark ? "#fff" : "#000",
+        headerTintColor: isDark ? "#fff" : "#111",
+        headerTitleStyle: { fontSize: 18, fontWeight: "700" },
+        headerShadowVisible: false,
+        headerLargeTitle: false,
       }}
     >
       <Tab.Screen
@@ -59,7 +66,7 @@ function TabNavigator() {
             <Ionicons
               name={focused ? "star" : "star-outline"}
               size={size}
-              color={focused ? "#FFD700" : color}
+              color={focused ? "#fbbf24" : color}
             />
           ),
         }}
