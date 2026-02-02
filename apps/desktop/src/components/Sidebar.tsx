@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "@/lib/better-auth";
 import { Button } from "@clipsync/ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@clipsync/ui";
-import { Settings, LogOut, Home, Star, Smartphone, Shield, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Settings, LogOut, Home, Star, Smartphone, Shield, MessageCircle, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "./ThemeToggle";
 import { api } from "@/lib/api";
@@ -16,7 +16,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
-  const [clipStats, setClipStats] = useState({ total: 0, favorites: 0 });
+  const [clipStats, setClipStats] = useState({ total: 0, favorites: 0, messages: 0 });
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
@@ -39,13 +39,15 @@ export default function Sidebar() {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const [allClipsResponse, favoriteClipsResponse] = await Promise.all([
+        const [allClipsResponse, favoriteClipsResponse, messagesResponse] = await Promise.all([
           api.clips.getAll({ pageSize: 1 }),
           api.clips.getAll({ favorite: true, pageSize: 1 }),
+          api.messages.list({ pageSize: 1 }).catch(() => ({ total: 0 })),
         ]);
         setClipStats({
           total: allClipsResponse.total || 0,
           favorites: favoriteClipsResponse.total || 0,
+          messages: messagesResponse?.total ?? 0,
         });
       } catch (error) {
         console.error("Failed to load clip stats:", error);
@@ -77,13 +79,13 @@ export default function Sidebar() {
     <div
       className={`${collapsed ? "w-16" : "w-64"} bg-card border-r border-border flex flex-col transition-[width] duration-200 ease-in-out shrink-0`}
     >
-      <div className={`border-b border-border flex items-center ${collapsed ? "p-2 justify-center" : "p-3"}`}>
+      <Link href="/" className={`border-b border-border flex items-center ${collapsed ? "p-2 justify-center" : "p-3"} shrink-0`} title="ClipSync Home">
         {collapsed ? (
-          <span className="text-lg font-bold" title="ClipSync">C</span>
+          <img src="/icon.svg" alt="" className="h-8 w-8 rounded-lg" width={32} height={32} />
         ) : (
-          <h1 className="text-lg font-bold truncate">ClipSync</h1>
+          <span className="text-lg font-bold tracking-tight truncate gradient-text">ClipSync</span>
         )}
-      </div>
+      </Link>
       <nav className={`flex-1 space-y-1 ${collapsed ? "p-2" : "p-4"}`}>
         <Link href="/" title={collapsed ? "All Clips" : undefined}>
           <Button
@@ -128,6 +130,24 @@ export default function Sidebar() {
           >
             <Smartphone className={collapsed ? "h-4 w-4" : "mr-2 h-4 w-4"} />
             {!collapsed && "Devices"}
+          </Button>
+        </Link>
+        <Link href="/messages" title={collapsed ? "Messages" : undefined}>
+          <Button
+            variant={pathname === "/messages" ? "secondary" : "ghost"}
+            className={`w-full ${collapsed ? "justify-center p-2" : "justify-start"}`}
+          >
+            <MessageCircle className={collapsed ? "h-4 w-4" : "mr-2 h-4 w-4"} />
+            {!collapsed && (
+              <>
+                Messages
+                {clipStats.messages > 0 && (
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {clipStats.messages}
+                  </span>
+                )}
+              </>
+            )}
           </Button>
         </Link>
         <Link href="/secure" title={collapsed ? "Secure" : undefined}>

@@ -1,4 +1,4 @@
-import { Clip, CreateClipRequest, PaginatedResponse } from "@clipsync/types";
+import { Clip, CreateClipRequest, PaginatedResponse, SyncedMessage, PushMessageItem } from "@clipsync/types";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -33,7 +33,7 @@ export function getAuthBaseUrl(): string {
 // Export for screens that need the raw API base (e.g. pairing)
 export { getApiUrl };
 
-// expo-secure-store can crash on some Android devices in release. Fall back to AsyncStorage.
+// expo-secure-store can crash on many Android devices in release builds. Use AsyncStorage on Android.
 let _store: { setItem: (k: string, v: string) => Promise<void>; getItem: (k: string) => Promise<string | null>; removeItem: (k: string) => Promise<void> } | null = null;
 
 async function getSecureStore(): Promise<{
@@ -42,7 +42,7 @@ async function getSecureStore(): Promise<{
   removeItem: (key: string) => Promise<void>;
 }> {
   if (_store) return _store;
-  if (Platform.OS === "web") {
+  if (Platform.OS === "web" || Platform.OS === "android") {
     _store = { setItem: (k, v) => AsyncStorage.setItem(k, v), getItem: (k) => AsyncStorage.getItem(k), removeItem: (k) => AsyncStorage.removeItem(k) };
     return _store;
   }
@@ -251,6 +251,35 @@ export const api = {
       await fetchWithAuth(`/secure/clips/${id}`, {
         method: "DELETE",
       });
+    },
+  },
+
+  messages: {
+    list: async (params?: { page?: number; pageSize?: number }): Promise<{
+      data: SyncedMessage[];
+      total: number;
+      page: number;
+      pageSize: number;
+      totalPages: number;
+    }> => {
+      const queryParams = new URLSearchParams();
+      if (params?.page) queryParams.append("page", params.page.toString());
+      if (params?.pageSize) queryParams.append("pageSize", params.pageSize.toString());
+      const response = await fetchWithAuth(`/messages?${queryParams}`);
+      return response.json();
+    },
+
+    newSince: async (since: string): Promise<{ messages: SyncedMessage[] }> => {
+      const response = await fetchWithAuth(`/messages/new-since?since=${encodeURIComponent(since)}`);
+      return response.json();
+    },
+
+    push: async (deviceId: string, messages: PushMessageItem[]): Promise<{ synced: number }> => {
+      const response = await fetchWithAuth("/messages/push", {
+        method: "POST",
+        body: JSON.stringify({ deviceId, messages }),
+      });
+      return response.json();
     },
   },
 

@@ -1,4 +1,4 @@
-import { Clip, CreateClipRequest, PaginatedResponse } from "@clipsync/types";
+import { Clip, CreateClipRequest, PaginatedResponse, SyncedMessage } from "@clipsync/types";
 
 function ensureAbsoluteUrl(raw: string, defaultVal: string): string {
   const val = (raw || defaultVal).trim().replace(/\/+$/, "");
@@ -170,6 +170,27 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ deviceId, clips }),
       });
+      return response.json();
+    },
+  },
+
+  messages: {
+    list: async (params?: { page?: number; pageSize?: number }): Promise<{
+      data: SyncedMessage[];
+      total: number;
+      page: number;
+      pageSize: number;
+      totalPages: number;
+    }> => {
+      const queryParams = new URLSearchParams();
+      if (params?.page) queryParams.append("page", params.page.toString());
+      if (params?.pageSize) queryParams.append("pageSize", params.pageSize.toString());
+      const response = await fetchWithAuth(`/messages?${queryParams}`);
+      return response.json();
+    },
+
+    newSince: async (since: string): Promise<{ messages: SyncedMessage[] }> => {
+      const response = await fetchWithAuth(`/messages/new-since?since=${encodeURIComponent(since)}`);
       return response.json();
     },
   },

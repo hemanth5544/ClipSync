@@ -80,9 +80,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
         body: JSON.stringify({ code }),
       });
-
+      console.log(getApiUrl());
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
+        console.log(error,"Tell me what ahppppp")
         throw new Error(error.error || "Pairing failed");
       }
 

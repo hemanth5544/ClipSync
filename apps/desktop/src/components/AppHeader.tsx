@@ -77,7 +77,7 @@ export default function AppHeader({
             New snippet
           </Button>
         )}
-        <span className="text-sm font-semibold text-muted-foreground tracking-tight shrink-0">
+        <span className="text-sm font-bold tracking-tight shrink-0 gradient-text">
           ClipSync
         </span>
       </div>

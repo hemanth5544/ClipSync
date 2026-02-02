@@ -19,6 +19,7 @@ export default function SettingsPage() {
   const [syncInterval, setSyncInterval] = useState(300); // 5 minutes
   const [historyLimit, setHistoryLimit] = useState(1000);
   const [notifyRemoteClips, setNotifyRemoteClips] = useState(true);
+  const [notifyRemoteMessages, setNotifyRemoteMessages] = useState(true);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -38,6 +39,8 @@ export default function SettingsPage() {
     const savedHistoryLimit = parseInt(localStorage.getItem("historyLimit") || "1000");
     const savedNotifyRemote = localStorage.getItem("notifyRemoteClips");
     setNotifyRemoteClips(savedNotifyRemote === null ? true : savedNotifyRemote !== "false");
+    const savedNotifyMessages = localStorage.getItem("notifyRemoteMessages");
+    setNotifyRemoteMessages(savedNotifyMessages === null ? true : savedNotifyMessages !== "false");
 
     setAutoStart(savedAutoStart);
     setSyncInterval(savedSyncInterval);
@@ -62,6 +65,11 @@ export default function SettingsPage() {
   const handleNotifyRemoteClipsChange = (checked: boolean) => {
     setNotifyRemoteClips(checked);
     localStorage.setItem("notifyRemoteClips", checked ? "true" : "false");
+  };
+
+  const handleNotifyRemoteMessagesChange = (checked: boolean) => {
+    setNotifyRemoteMessages(checked);
+    localStorage.setItem("notifyRemoteMessages", checked ? "true" : "false");
   };
 
   return (
@@ -128,6 +136,19 @@ export default function SettingsPage() {
                   id="notify-remote"
                   checked={notifyRemoteClips}
                   onCheckedChange={handleNotifyRemoteClipsChange}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="notify-messages">Notify when messages sync from phone</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Show a push notification when new SMS are synced from your Android phone
+                  </p>
+                </div>
+                <Switch
+                  id="notify-messages"
+                  checked={notifyRemoteMessages}
+                  onCheckedChange={handleNotifyRemoteMessagesChange}
                 />
               </div>
             </CardContent>

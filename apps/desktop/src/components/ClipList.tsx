@@ -42,6 +42,8 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
   const seenClipIdsRef = useRef<Set<string>>(new Set());
   const initialLoadDoneRef = useRef(false);
   const currentDeviceNameRef = useRef<string | null>(null);
+  const lastMessagesCheckRef = useRef<string>(new Date().toISOString());
+  const seenMessageIdsRef = useRef<Set<string>>(new Set());
 
   const notifyRemoteClip = async (clip: Clip) => {
     const enabled = localStorage.getItem("notifyRemoteClips") !== "false"; // default true
@@ -53,6 +55,31 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
       `Clipboard from ${deviceName}`,
       body || "New content copied"
     );
+  };
+
+  const checkNewMessages = async () => {
+    const enabled = localStorage.getItem("notifyRemoteMessages") !== "false";
+    if (!enabled || !window.electronAPI?.showNotification) return;
+    try {
+      const since = lastMessagesCheckRef.current;
+      const { messages: newMessages } = await api.messages.newSince(since);
+      if (newMessages.length === 0) return;
+      for (const msg of newMessages) {
+        if (seenMessageIdsRef.current.has(msg.id)) continue;
+        seenMessageIdsRef.current.add(msg.id);
+        const sender = msg.sender || msg.address || "Phone";
+        const preview = msg.body?.slice(0, 60) || "";
+        const body = preview.length >= 60 ? `${preview}...` : preview;
+        await window.electronAPI.showNotification(
+          `Message from ${sender}`,
+          body || "New message synced"
+        );
+      }
+      const latest = newMessages[newMessages.length - 1];
+      if (latest?.createdAt) lastMessagesCheckRef.current = latest.createdAt;
+    } catch {
+      // Ignore errors (e.g. not authenticated, network)
+    }
   };
 
   useEffect(() => {
@@ -70,11 +97,14 @@ export default function ClipList({ searchQuery = "" }: ClipListProps) {
     // (e.g., if clips were added from another device)
     const interval = setInterval(() => {
       loadClips();
-    }, 30000); // 30 seconds instead of 2 seconds
-    
+    }, 30000);
+    // Poll for new synced messages from phone → show push notification
+    const messagesInterval = setInterval(checkNewMessages, 30000);
+
     return () => {
       window.removeEventListener(CLIP_SAVED_EVENT, handleClipSaved);
       clearInterval(interval);
+      clearInterval(messagesInterval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

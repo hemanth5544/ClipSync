@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PairingScreen from "../screens/PairingScreen";
 import HomeScreen from "../screens/HomeScreen";
 import FavoritesScreen from "../screens/FavoritesScreen";
+import MessagesScreen from "../screens/MessagesScreen";
 import SecureScreen from "../screens/SecureScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import { useAuth } from "../contexts/AuthContext";
@@ -61,6 +62,16 @@ function TabNavigator() {
               color={focused ? "#FFD700" : color}
             />
           ),
+        }}
+      />
+      <Tab.Screen
+        name="Messages"
+        component={MessagesScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubbles" size={size} color={color} />
+          ),
+          title: "Messages",
         }}
       />
       <Tab.Screen
