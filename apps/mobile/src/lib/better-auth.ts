@@ -6,6 +6,8 @@ const AUTH_BASE_URL = Constants.expoConfig?.extra?.authUrl ?? "";
 export const authClient = createAuthClient({
   baseURL: AUTH_BASE_URL || "https://clipsync-auth.up.railway.app",
 });
+//TODO: IN Futrure we need to support the singup and login flow in mobile app also
+// FYI : Currenlty we use only pairing flow in mobile app
 
 // Export auth methods
 export const signIn = authClient.signIn;
