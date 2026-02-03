@@ -10,7 +10,7 @@
     "dev:network": "next dev -H 0.0.0.0",
     "build": "SKIP_ENV_VALIDATION=true next build && (test ! -d .next/standalone/apps/desktop || (cp -r public .next/standalone/apps/desktop/ && mkdir -p .next/standalone/apps/desktop/.next && cp -r .next/static .next/standalone/apps/desktop/.next/))",
     "build:web": "next build",
-    "start": "cd .next/standalone/apps/desktop && node server.js",
+    "start": "cd .next/standalone/apps/desktop && HOSTNAME=0.0.0.0 node server.js",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "type-check:web": "tsc --noEmit --skipLibCheck",
