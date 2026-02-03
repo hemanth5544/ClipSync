@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -9,11 +9,15 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  AppState,
+  AppStateStatus,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SyncedMessage } from "@clipsync/types";
 import { api } from "../lib/api";
 import { useTheme } from "../contexts/ThemeContext";
@@ -21,6 +25,8 @@ import { requestSmsPermission, hasSmsPermission, readSmsFromDevice } from "../li
 import { formatRelativeTime } from "../lib/timeUtils";
 
 const MESSAGES_SYNC_ENABLED_KEY = "messages_sync_enabled";
+const MESSAGES_LAST_SYNC_AT_KEY = "messages_last_sync_at";
+const BACKGROUND_SYNC_INTERVAL_MS = 45000; // 45 seconds
 
 /** Running inside Expo Go — SMS read is not available; need a dev build. */
 const isExpoGo = Constants.appOwnership === "expo";
@@ -50,10 +56,17 @@ export default function MessagesScreen() {
     }
   }, []);
 
+  // Re-check SMS permission when screen is focused (e.g. after user grants in dialog or returns from Settings)
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS !== "android") return;
+      hasSmsPermission().then(setPermissionGranted);
+    }, [])
+  );
+
   useEffect(() => {
     loadMessages();
     (async () => {
-      const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
       const enabled = await AsyncStorage.getItem(MESSAGES_SYNC_ENABLED_KEY);
       setSyncEnabled(enabled === "true");
       if (Platform.OS === "android") {
@@ -115,13 +128,16 @@ export default function MessagesScreen() {
           "No SMS were read. Check that you granted SMS permission and use a development build (not Expo Go)."
         );
       } else {
-        const result = await api.messages.push(deviceId, smsList.map((s) => ({
+        const payload = smsList.map((s) => ({
           body: s.body,
           sender: s.sender,
           address: s.address,
           receivedAt: s.receivedAt,
-        })));
-        Alert.alert("Synced", `${result.synced} message(s) synced. They will appear on your desktop with push notifications.`);
+        }));
+        const result = await api.messages.push(deviceId, payload);
+        const maxReceived = Math.max(...smsList.map((s) => new Date(s.receivedAt).getTime()));
+        await AsyncStorage.setItem(MESSAGES_LAST_SYNC_AT_KEY, String(maxReceived));
+        Alert.alert("Synced", `${result.synced} message(s) synced. New messages will auto-sync and desktop will get push notifications.`);
         loadMessages();
       }
     } catch (error: unknown) {
@@ -154,11 +170,49 @@ export default function MessagesScreen() {
   };
 
   const toggleSyncEnabled = async () => {
-    const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
     const next = !syncEnabled;
     await AsyncStorage.setItem(MESSAGES_SYNC_ENABLED_KEY, next ? "true" : "false");
     setSyncEnabled(next);
   };
+
+  // Background sync: when sync is On and permission granted, periodically push new SMS to API so desktop gets them and can show notifications
+  const syncNewMessagesToApi = useCallback(async () => {
+    if (Platform.OS !== "android" || isExpoGo || !(permissionGranted ?? false)) return;
+    const enabled = await AsyncStorage.getItem(MESSAGES_SYNC_ENABLED_KEY);
+    if (enabled !== "true") return;
+    try {
+      const lastAt = await AsyncStorage.getItem(MESSAGES_LAST_SYNC_AT_KEY);
+      const sinceTs = lastAt ? parseInt(lastAt, 10) : 0;
+      const smsList = await readSmsFromDevice({ sinceTimestamp: sinceTs, maxCount: 100 });
+      if (smsList.length === 0) return;
+      const payload = smsList.map((s) => ({
+        body: s.body,
+        sender: s.sender,
+        address: s.address,
+        receivedAt: s.receivedAt,
+      }));
+      await api.messages.push(deviceId, payload);
+      const maxReceived = Math.max(...smsList.map((s) => new Date(s.receivedAt).getTime()));
+      await AsyncStorage.setItem(MESSAGES_LAST_SYNC_AT_KEY, String(maxReceived));
+      loadMessages();
+    } catch (e) {
+      // Silent fail for background sync
+    }
+  }, [deviceId, loadMessages, permissionGranted]);
+
+  useEffect(() => {
+    if (!syncEnabled || permissionGranted !== true || isExpoGo || Platform.OS !== "android") return;
+    const run = () => syncNewMessagesToApi();
+    run(); // run once soon
+    const interval = setInterval(run, BACKGROUND_SYNC_INTERVAL_MS);
+    const sub = AppState.addEventListener("change", (state: AppStateStatus) => {
+      if (state === "active") run();
+    });
+    return () => {
+      clearInterval(interval);
+      sub.remove();
+    };
+  }, [syncEnabled, permissionGranted, syncNewMessagesToApi]);
 
   if (loading) {
     return (
@@ -203,8 +257,16 @@ export default function MessagesScreen() {
           ) : Platform.OS === "android" ? (
             <>
               <Text style={[styles.hint, isDark && styles.textMuted]}>
-                Allow access to your SMS so they sync to ClipSync. On desktop you'll get push notifications for new messages.
+                {permissionGranted === true
+                  ? "New messages sync automatically when SMS sync is On. Desktop gets push notifications."
+                  : "Allow access to your SMS so they sync to ClipSync. On desktop you'll get push notifications for new messages."}
               </Text>
+              {permissionGranted === true && (
+                <View style={[styles.permissionBadge, isDark && styles.permissionBadgeDark]}>
+                  <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
+                  <Text style={[styles.permissionBadgeText, isDark && styles.textLight]}>SMS access allowed</Text>
+                </View>
+              )}
               <View style={styles.row}>
                 <Text style={[styles.label, isDark && styles.textLight]}>SMS sync</Text>
                 <TouchableOpacity
@@ -301,6 +363,18 @@ const styles = StyleSheet.create({
   },
   expoGoBannerDark: { backgroundColor: "#1e3a5f" },
   expoGoBannerText: { flex: 1, fontSize: 14, lineHeight: 20, color: "#1e40af" },
+  permissionBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "rgba(34, 197, 94, 0.12)",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  permissionBadgeDark: { backgroundColor: "rgba(34, 197, 94, 0.2)" },
+  permissionBadgeText: { fontSize: 14, fontWeight: "600", color: "#166534" },
   row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
   label: { fontSize: 16, color: "#000" },
   switch: {
