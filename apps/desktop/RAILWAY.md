@@ -27,8 +27,10 @@
 
 3. **Configure Build Settings**
    - **Builder**: Use "Nixpacks" or "Railpack" (Default)
-   - **Build Command**: `cd apps/desktop && pnpm install && pnpm prisma:generate && pnpm build`
-   - **Start Command**: `cd apps/desktop && pnpm start`
+   - **Root Directory**: Leave empty (repo root) so workspace deps install correctly.
+   - **Build Command**: `pnpm install && pnpm run desktop:build` (or use `railway.toml` defaults)
+   - **Start Command**: `pnpm run desktop:start` (or use `railway.toml` defaults)
+   - **Do not use** `desktop:dev` or `build:skip` — that runs the dev server and skips the build, which causes CSS parse errors (Tailwind not compiled) and is not for production.
 
 4. **Run Prisma Migrations**
    After deployment, run migrations:
@@ -39,11 +41,10 @@
 ## Build Process
 
 Railway will:
-1. Install dependencies at root (pnpm workspace)
-2. Install dependencies in `apps/desktop`
-3. Generate Prisma client
-4. Build Next.js app (outputs to `.next/standalone`) - **Electron files are excluded**
-5. Start Next.js server as a web application
+1. Install dependencies at root (pnpm workspace) via `pnpm install`
+2. Build the desktop app via `pnpm run desktop:build` (runs `next build` in `apps/desktop`)
+3. Next.js compiles CSS (Tailwind/PostCSS), TypeScript, and outputs to `.next` (standalone when not exporting)
+4. Start the production server via `pnpm run desktop:start` (runs `next start`; uses Railway's `PORT`)
 
 **Note**: This deployment is for the **Next.js web app only**, not the Electron desktop app. The Electron files are excluded from the build.
 

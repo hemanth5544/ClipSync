@@ -1,21 +1,21 @@
 # Railway Configuration for Desktop Next.js Web App
 # IMPORTANT: This deploys ONLY the Next.js web app (NOT Electron)
-# 
-# Desktop app now uses external auth service (apps/auth)
-# No database connection needed in desktop app
+#
+# Use production build + start. Do NOT use "dev" or "build:skip" — that causes
+# CSS parse errors (Tailwind @ directives not processed) and is not for production.
 #
 # In Railway Dashboard:
 # 1. Settings → Source → Root Directory: Leave EMPTY (use repo root)
-# 2. Settings → Build → Builder: Use "Nixpacks" or "Railpack" (Default)
-# 3. Settings → Build → Build Command: Override with: pnpm install && cd apps/desktop && pnpm install && pnpm run build:skip
+# 2. Build Command: pnpm install && pnpm run desktop:build  (or leave empty to use below)
+# 3. Start Command: pnpm run desktop:start  (or leave empty to use below)
 
 [build]
 builder = "NIXPACKS"
-# Install deps and build (no Prisma needed - uses external auth service)
-buildCommand = "pnpm install && cd apps/desktop && pnpm install && pnpm run build:skip"
+# Install deps from root (workspace), then build desktop app (compiles CSS, etc.)
+buildCommand = "pnpm install && pnpm run desktop:build"
 
 [deploy]
-# Dev script already generates Prisma client, just start it
-startCommand = "cd apps/desktop && pnpm dev"
+# Run production server (uses PORT from Railway; output is standalone)
+startCommand = "pnpm run desktop:start"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10

@@ -26,6 +26,8 @@ const nextConfig = {
   },
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
+  // Allow dev assets when accessed from Railway domain (e.g. clipsync.up.railway.app)
+  allowedDevOrigins: ['clipsync.up.railway.app'],
   env: {
     NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3001",
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,

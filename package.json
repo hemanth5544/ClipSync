@@ -17,6 +17,7 @@
     "backend:start:railway": "cd apps/backend && ./bin/server",
     "desktop:dev": "cd apps/desktop && pnpm dev",
     "desktop:build": "cd apps/desktop && pnpm build",
+    "desktop:start": "cd apps/desktop && pnpm start",
     "electron:dev": "cd apps/desktop && pnpm electron:dev",
     "electron:dev:prod": "cd apps/desktop && pnpm electron:dev:prod",
     "electron:dev:network": "cd apps/desktop && pnpm electron:dev:network",
