@@ -7,7 +7,7 @@
 # Recommended: leave Root Directory empty and use the root railway.toml.
 
 [build]
-builder = "NIXPACKS"
+builder = "RAILPACK"
 buildCommand = "cd ../.. && pnpm install && pnpm run desktop:build"
 
 [deploy]

@@ -7,7 +7,7 @@
 # - Build/Start below are used; or override in Dashboard if needed.
 
 [build]
-builder = "NIXPACKS"
+builder = "RAILPACK"
 buildCommand = "pnpm install && pnpm run desktop:build"
 
 [deploy]
