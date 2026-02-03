@@ -38,6 +38,9 @@ importers:
       '@clipsync/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      autoprefixer:
+        specifier: ^10.4.17
+        version: 10.4.23(postcss@8.5.6)
       better-auth:
         specifier: ^1.0.0
         version: 1.4.17(next@14.2.35)(react-dom@18.3.1)(react@18.3.1)
@@ -53,6 +56,9 @@ importers:
       next-themes:
         specifier: ^0.2.1
         version: 0.2.1(next@14.2.35)(react-dom@18.3.1)(react@18.3.1)
+      postcss:
+        specifier: ^8.4.33
+        version: 8.5.6
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -65,6 +71,12 @@ importers:
       react-syntax-highlighter:
         specifier: ^15.5.0
         version: 15.6.6(react@18.3.1)
+      tailwindcss:
+        specifier: ^3.4.1
+        version: 3.4.19
+      tailwindcss-animate:
+        specifier: ^1.0.7
+        version: 1.0.7(tailwindcss@3.4.19)
       zustand:
         specifier: ^4.5.0
         version: 4.5.7(@types/react@18.3.27)(react@18.3.1)
@@ -87,9 +99,6 @@ importers:
       '@types/react-syntax-highlighter':
         specifier: ^15.5.11
         version: 15.5.13
-      autoprefixer:
-        specifier: ^10.4.17
-        version: 10.4.23(postcss@8.5.6)
       concurrently:
         specifier: ^8.2.2
         version: 8.2.2
@@ -108,15 +117,9 @@ importers:
       eslint:
         specifier: ^8.56.0
         version: 8.57.1
-      postcss:
-        specifier: ^8.4.33
-        version: 8.5.6
       qrcode.react:
         specifier: ^4.2.0
         version: 4.2.0(react@18.3.1)
-      tailwindcss:
-        specifier: ^3.4.1
-        version: 3.4.19
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
@@ -4591,7 +4594,6 @@ packages:
       picocolors: 1.1.1
       postcss: 8.5.6
       postcss-value-parser: 4.2.0
-    dev: true
 
   /available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
@@ -6888,7 +6890,6 @@ packages:
 
   /fraction.js@5.3.4:
     resolution: {integrity: sha512-1X1NTtiJphryn/uLQz3whtY6jK3fTqoE3ohKs0tT+Ujr1W59oopxmoEh7Lu5p6vBaPbgoM0bzveAW4Qi5RyWDQ==}
-    dev: true
 
   /framer-motion@10.18.0(react-dom@18.3.1)(react@18.3.1):
     resolution: {integrity: sha512-oGlDh1Q1XqYPksuTD/usb0I70hq95OUzmL9+6Zd+Hs4XV0oaISBa/UUMSjYiq6m8EUF32132mOJ8xVZS+I0S6w==}
