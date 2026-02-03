@@ -36,6 +36,7 @@ lerna-debug.log*
 *.swo
 *~
 Thumbs.db
+public/releases
 
 # IDE
 .vscode/
