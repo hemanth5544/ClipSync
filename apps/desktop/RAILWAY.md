@@ -11,8 +11,7 @@
    - Go to Railway dashboard
    - Click "New Project" → "Deploy from GitHub repo"
    - Select your repository
-   - **IMPORTANT**: Leave Root Directory empty (use repo root) OR set to "." (repo root)
-   - This is because we need access to the root `package.json` and `pnpm-workspace.yaml`
+   - **IMPORTANT**: Leave **Root Directory** empty (use repo root). Railway will use the **root `railway.toml`**, which runs `pnpm run desktop:build` and `pnpm run desktop:start`. This gives access to the monorepo workspace and `pnpm-workspace.yaml`.
 
 2. **Configure Environment Variables**
    Add these environment variables in Railway dashboard:

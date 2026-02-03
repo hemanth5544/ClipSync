@@ -1,0 +1,16 @@
+# Root config for deploying the desktop (Next.js) app from this monorepo.
+# Railway uses this when Root Directory is empty (repo root).
+# Build and start run from repo root; they delegate to apps/desktop via pnpm scripts.
+#
+# In Railway Dashboard:
+# - Source → Root Directory: leave EMPTY (so this file is found and workspace deps work)
+# - Build/Start below are used; or override in Dashboard if needed.
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "pnpm install && pnpm run desktop:build"
+
+[deploy]
+startCommand = "pnpm run desktop:start"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10

@@ -5,6 +5,7 @@
   "description": "ClipSync monorepo — install from root with pnpm so all apps use workspace packages (@clipsync/types, @clipsync/ui, etc.).",
   "scripts": {
     "dev": "turbo run dev",
+    "start": "pnpm run desktop:start",
     "build:skip": "echo 'Build skipped - running in dev mode' && exit 0",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
