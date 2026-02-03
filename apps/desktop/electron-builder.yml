@@ -34,12 +34,25 @@ mac:
   category: public.app-category.productivity
 
 linux:
+  executableName: clipsync-desktop
   target: 
+    - target: deb
+      arch:
+        - x64
     - target: AppImage
       arch:
         - x64
-  icon: assets/icon.png
+  icon: build/icons
   category: Utility
+  maintainer: ClipSync
+  vendor: ClipSync
+  synopsis: Cross-platform clipboard manager
+  description: ClipSync - Sync your clipboard across devices. Save clips, favorites, secure notes, and pair with your phone.
+
+# Debian package: use a simple name (no @ or /) so dist path is valid
+deb:
+  packageName: clipsync-desktop
+  artifactName: "clipsync-desktop_${version}_${arch}.${ext}"
 
 # NSIS installer configuration (Windows)
 nsis:
