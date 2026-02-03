@@ -2,12 +2,6 @@
 
 import { motion } from 'framer-motion'
 
-const stats = [
-  { value: '50,000+', label: 'Active users' },
-  { value: '10M+', label: 'Clips synced daily' },
-  { value: '99.9%', label: 'Uptime' },
-]
-
 const testimonials = [
   'ClipSync changed how I work across my laptop and desktop.',
   'Finally, clipboard sync that just works.',
@@ -18,29 +12,20 @@ const testimonials = [
 export function SocialProof() {
   return (
     <section
-      className="relative border-y border-[var(--border)] bg-[var(--surface)]/60 py-16"
+      className="relative border-y border-[var(--border)] bg-[var(--surface)]/60 py-12 md:py-14"
       aria-label="Social proof"
     >
       <div className="container mx-auto px-4">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col items-center gap-12"
+          transition={{ duration: 0.4 }}
+          className="flex flex-col items-center gap-10"
         >
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
-            {stats.map((stat, i) => (
-              <div key={stat.label} className="text-center">
-                <p className="font-display text-3xl font-bold text-[var(--text-primary)] md:text-4xl">
-                  {stat.value}
-                </p>
-                <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
-          </div>
+          <p className="text-center font-display text-xl font-semibold text-[var(--text-primary)] md:text-2xl">
+            Loved by 50,000+ users worldwide
+          </p>
 
           <div className="glass relative w-full max-w-4xl overflow-hidden rounded-2xl border border-[var(--border)] p-2">
             <motion.div

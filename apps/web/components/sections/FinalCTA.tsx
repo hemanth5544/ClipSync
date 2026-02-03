@@ -1,8 +1,24 @@
 'use client'
 
-import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Button } from '@clipsync/ui'
+import { Download, Monitor, Laptop, Terminal, Clock, Globe } from 'lucide-react'
+
+// Files in web app public/releases/ — put built desktop installers there
+const RELEASES_PATH = '/releases'
+const WEB_APP_URL = 'https://clipsync.up.railway.app'
+
+const desktopFiles = {
+  windows: 'ClipSync Setup 1.0.0.exe',
+  macArm: 'ClipSync-1.0.0-arm64.dmg',
+  macIntel: 'ClipSync-1.0.0-x64.dmg',
+  linuxAppImage: 'ClipSync-1.0.0.AppImage',
+  linuxDeb: 'clipsync-desktop_1.0.0_amd64.deb',
+} as const
+
+function downloadUrl(filename: string) {
+  return `${RELEASES_PATH}/${filename}`
+}
 
 export function FinalCTA() {
   return (
@@ -18,7 +34,7 @@ export function FinalCTA() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mx-auto max-w-3xl"
+          className="mx-auto max-w-4xl"
         >
           <h2
             id="cta-heading"
@@ -27,20 +43,79 @@ export function FinalCTA() {
             Start organizing your clipboard today
           </h2>
           <p className="mt-6 text-lg text-[var(--text-secondary)]">
-            Join thousands of users who never lose their clips. Get started in
-            under a minute.
+            Join thousands of users who never lose their clips. Download the
+            desktop app for your platform.
           </p>
-          <div className="mt-10">
-            <Button
-              asChild
-              size="lg"
-              className="h-14 bg-gradient-to-r from-[var(--primary-from)] to-[var(--primary-to)] px-10 text-lg font-semibold text-white shadow-lg shadow-amber-500/35 transition-all hover:opacity-90 hover:shadow-amber-500/45"
-            >
-              <Link href="/#download">Download for Free</Link>
+
+          <div className="mt-10 grid gap-5 sm:grid-cols-3">
+            {/* Windows — Coming soon */}
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--card)]/60 p-5 opacity-80">
+              <div className="flex items-center justify-center gap-2 text-[var(--text-secondary)]">
+                <Monitor className="h-5 w-5" aria-hidden />
+                <span className="font-medium">Windows</span>
+              </div>
+              <div className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)]/50 py-3 text-sm text-[var(--text-secondary)]">
+                <Clock className="h-4 w-4" aria-hidden />
+                Coming soon
+              </div>
+            </div>
+
+            {/* macOS — Coming soon */}
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--card)]/60 p-5 opacity-80">
+              <div className="flex items-center justify-center gap-2 text-[var(--text-secondary)]">
+                <Laptop className="h-5 w-5" aria-hidden />
+                <span className="font-medium">macOS</span>
+              </div>
+              <div className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)]/50 py-3 text-sm text-[var(--text-secondary)]">
+                <Clock className="h-4 w-4" aria-hidden />
+                Coming soon
+              </div>
+            </div>
+
+            {/* Linux: AppImage + DEB */}
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--card)]/80 p-5 shadow-sm backdrop-blur">
+              <div className="flex items-center justify-center gap-2 text-[var(--text-secondary)]">
+                <Terminal className="h-5 w-5" aria-hidden />
+                <span className="font-medium">Linux</span>
+              </div>
+              <div className="mt-4 flex flex-col gap-2">
+                <Button
+                  asChild
+                  size="lg"
+                  className="w-full bg-gradient-to-r from-[var(--primary-from)] to-[var(--primary-to)] text-white hover:opacity-90"
+                >
+                  <a
+                    href={downloadUrl(desktopFiles.linuxAppImage)}
+                    download
+                    aria-label={`Download ClipSync AppImage (${desktopFiles.linuxAppImage})`}
+                  >
+                    <Download className="mr-2 h-4 w-4" aria-hidden />
+                    AppImage
+                  </a>
+                </Button>
+                <Button asChild size="lg" className="w-full" variant="outline">
+                  <a
+                    href={downloadUrl(desktopFiles.linuxDeb)}
+                    download
+                    aria-label={`Download ClipSync DEB (${desktopFiles.linuxDeb})`}
+                  >
+                    DEB (.deb)
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-4">
+            <Button asChild variant="outline" size="lg" className="gap-2">
+              <a href={WEB_APP_URL} target="_blank" rel="noopener noreferrer" aria-label="Try ClipSync in the browser">
+                <Globe className="h-4 w-4" aria-hidden />
+                Try Web
+              </a>
             </Button>
           </div>
           <p className="mt-6 text-sm text-[var(--text-secondary)]">
-            No credit card required • Free forever for personal use
+            Desktop builds are alpha — early release. No credit card required.
           </p>
         </motion.div>
       </div>

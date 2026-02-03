@@ -5,65 +5,78 @@ import {
   Zap,
   Lock,
   Search,
-  FolderOpen,
+  Star,
   Keyboard,
   Cloud,
+  Smartphone,
+  MessageSquare,
+  Shield,
 } from 'lucide-react'
 
 const features = [
   {
     id: 'sync',
-    title: 'Instant Sync Across Devices',
-    description: 'Copy on one device, paste on another. Your clipboard follows you everywhere in real time. No setup, no delay.',
+    title: 'Instant Sync',
+    description: 'Copy on one device, paste on another. Real-time sync across all your devices.',
     icon: Zap,
-    size: 'large' as const,
     gradient: 'from-amber-500/15 to-orange-500/15',
     iconGradient: 'from-amber-500 to-orange-600',
   },
   {
     id: 'secure',
-    title: 'Secure & Private',
-    description: 'End-to-end encryption. Your clips are never stored in plain text.',
-    icon: Lock,
-    size: 'small' as const,
+    title: 'Secure Notes',
+    description: 'End-to-end encrypted vault for sensitive clips. Never stored in plain text.',
+    icon: Shield,
     gradient: 'from-amber-500/10 to-orange-500/10',
     iconGradient: 'from-amber-500 to-orange-600',
   },
   {
     id: 'search',
-    title: 'Lightning Fast Search',
+    title: 'Search & Filter',
     description: 'Find any clip in milliseconds. Filter by type, date, or full-text.',
     icon: Search,
-    size: 'small' as const,
     gradient: 'from-orange-500/10 to-amber-500/10',
     iconGradient: 'from-orange-500 to-amber-600',
   },
   {
-    id: 'organize',
-    title: 'Smart Organization',
-    description: 'Tags, favorites, and folders. Keep your clipboard tidy and easy to navigate.',
-    icon: FolderOpen,
-    size: 'small' as const,
+    id: 'favorites',
+    title: 'Favorites',
+    description: 'Star your go-to clips for quick access from the favorites view.',
+    icon: Star,
     gradient: 'from-fuchsia-500/10 to-pink-500/10',
     iconGradient: 'from-fuchsia-500 to-pink-600',
   },
   {
     id: 'shortcuts',
     title: 'Global Shortcuts',
-    description: 'Access your clipboard from anywhere with customizable keyboard shortcuts.',
+    description: 'Open clipboard anywhere with Ctrl+Shift+V or customizable shortcuts.',
     icon: Keyboard,
-    size: 'small' as const,
     gradient: 'from-amber-500/10 to-orange-500/10',
     iconGradient: 'from-amber-500 to-orange-600',
   },
   {
     id: 'backup',
-    title: 'Cloud Backup',
-    description: 'Never lose a clip. Automatic backup with version history.',
+    title: 'Version History',
+    description: 'Automatic backup with version history. Never lose a clip.',
     icon: Cloud,
-    size: 'small' as const,
     gradient: 'from-emerald-500/10 to-teal-500/10',
     iconGradient: 'from-emerald-500 to-teal-600',
+  },
+  {
+    id: 'pairing',
+    title: 'Device Pairing',
+    description: 'Pair desktop with your phone via QR code. One account, all devices.',
+    icon: Smartphone,
+    gradient: 'from-violet-500/10 to-purple-500/10',
+    iconGradient: 'from-violet-500 to-purple-600',
+  },
+  {
+    id: 'messages',
+    title: 'Synced Messages',
+    description: 'Send clips between devices. See sync status and message history.',
+    icon: MessageSquare,
+    gradient: 'from-cyan-500/10 to-blue-500/10',
+    iconGradient: 'from-cyan-500 to-blue-600',
   },
 ]
 
@@ -108,46 +121,35 @@ export function FeaturesBento() {
           </p>
         </motion.div>
 
-        {/* Asymmetric bento grid: 4 cols, 3 rows. Sync = 2x3, rest = 1x1 */}
+        {/* Compact bento grid — equal cards, clean UI */}
         <motion.div
           variants={container}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: '-40px' }}
-          className="mx-auto mt-16 grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 md:grid-rows-3 md:gap-5"
+          className="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {features.map((feature, index) => {
+          {features.map((feature) => {
             const Icon = feature.icon
-            const isLarge = feature.size === 'large'
             return (
               <motion.div
                 key={feature.id}
                 variants={item}
-                className={`group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-white/80 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/15 dark:bg-zinc-800/90 dark:border-zinc-700 dark:hover:border-zinc-600 dark:hover:shadow-zinc-500/10 ${
-                  isLarge
-                    ? 'md:col-span-2 md:row-span-3 md:flex md:flex-col md:justify-center md:p-8'
-                    : ''
-                }`}
+                className="group relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)]/80 p-4 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-amber-300/50 hover:shadow-md dark:bg-zinc-800/80 dark:border-zinc-700 dark:hover:border-zinc-600"
               >
                 <div
-                  className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-zinc-600/20 dark:to-zinc-500/10`}
+                  className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:from-zinc-600/15 dark:to-zinc-500/10`}
                 />
-                <div className="relative flex h-full flex-col">
-                  <motion.div
-                    className={`inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${feature.iconGradient} text-white shadow-lg transition-transform duration-300 group-hover:scale-110`}
-                    whileHover={{ rotate: [0, -5, 5, 0] }}
-                    transition={{ duration: 0.4 }}
+                <div className="relative flex flex-col gap-3">
+                  <div
+                    className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${feature.iconGradient} text-white shadow-sm transition-transform duration-200 group-hover:scale-105`}
                   >
-                    <Icon className="h-6 w-6" aria-hidden />
-                  </motion.div>
-                  <h3 className="mt-4 font-display text-lg font-semibold text-[var(--text-primary)] md:mt-5">
+                    <Icon className="h-4 w-4" aria-hidden />
+                  </div>
+                  <h3 className="font-display text-sm font-semibold leading-tight text-[var(--text-primary)]">
                     {feature.title}
                   </h3>
-                  <p
-                    className={`mt-2 text-sm leading-relaxed text-[var(--text-secondary)] ${
-                      isLarge ? 'mt-3 max-w-md text-base' : ''
-                    }`}
-                  >
+                  <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
                     {feature.description}
                   </p>
                 </div>

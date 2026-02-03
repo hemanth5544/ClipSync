@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@clipsync/ui'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -26,19 +26,16 @@ export function Nav() {
   }, [])
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+    <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'pt-3 px-4 md:pt-4 md:px-6' : ''
+        scrolled ? 'pt-3 px-4 md:pt-4 md:px-6' : 'pt-4 px-4 md:px-6'
       }`}
     >
       <div
         className={`transition-all duration-300 ease-out ${
           scrolled
             ? 'mx-auto max-w-4xl rounded-2xl border border-[var(--border)] shadow-lg dark:shadow-black/20 glass md:rounded-2xl'
-            : ''
+            : 'mx-auto max-w-5xl'
         }`}
       >
         <nav className="flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
@@ -84,7 +81,7 @@ export function Nav() {
         </nav>
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -119,6 +116,6 @@ export function Nav() {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.header>
+    </header>
   )
 }

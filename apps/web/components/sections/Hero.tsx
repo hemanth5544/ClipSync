@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Download, Play, ChevronDown, Clipboard, ClipboardCheck } from 'lucide-react'
+import { Download, Play, ChevronDown, Clipboard, ClipboardCheck, Globe } from 'lucide-react'
 import { Button } from '@clipsync/ui'
 import { HeroFloatingClips } from '@/components/animations/HeroFloatingClips'
 
@@ -57,11 +57,11 @@ export function Hero() {
           variants={container}
           initial="hidden"
           animate="show"
-          className="flex flex-col items-center gap-10"
+          className="flex flex-col items-center gap-8"
         >
           <motion.p
             variants={item}
-            className="rounded-full border border-[var(--border)] bg-white/70 px-5 py-2 text-sm font-medium text-[var(--text-secondary)] shadow-sm backdrop-blur-sm dark:bg-zinc-800/90 dark:border-zinc-700 dark:text-zinc-300"
+            className="rounded-full border border-[var(--border)] bg-white/80 px-5 py-2.5 text-sm font-medium text-[var(--text-secondary)] shadow-sm backdrop-blur-md dark:bg-zinc-800/90 dark:border-zinc-700 dark:text-zinc-300"
           >
             Loved by 50,000+ users worldwide
           </motion.p>
@@ -129,20 +129,19 @@ export function Hero() {
 
           <motion.p
             variants={item}
-            className="max-w-2xl text-lg leading-relaxed text-[var(--text-secondary)] sm:text-xl"
+            className="max-w-xl text-base leading-relaxed text-[var(--text-secondary)] sm:text-lg"
           >
-            Never lose what you copy. Sync your clipboard across Windows, macOS, and Linux
-            instantly. Secure, fast, and beautifully simple.
+            Never lose what you copy. Sync your clipboard across devices — secure, fast, and simple.
           </motion.p>
 
           <motion.div
             variants={item}
-            className="flex flex-col items-center gap-4 sm:flex-row sm:gap-4"
+            className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4"
           >
             <Button
               asChild
               size="lg"
-              className="h-12 w-full min-w-[200px] bg-gradient-to-r from-[var(--primary-from)] to-[var(--primary-to)] px-8 text-base font-semibold text-white shadow-lg shadow-amber-500/30 transition-all duration-300 hover:scale-[1.02] hover:opacity-95 hover:shadow-amber-500/40 sm:w-auto"
+              className="h-12 w-full min-w-[180px] bg-gradient-to-r from-[var(--primary-from)] to-[var(--primary-to)] px-8 text-base font-semibold text-white shadow-lg shadow-amber-500/25 transition-all duration-200 hover:opacity-95 hover:shadow-amber-500/35 sm:w-auto"
             >
               <Link href="/#download" className="flex items-center justify-center gap-2">
                 <Download className="h-5 w-5" aria-hidden />
@@ -151,9 +150,20 @@ export function Hero() {
             </Button>
             <Button
               asChild
+              variant="outline"
+              size="lg"
+              className="h-12 w-full min-w-[180px] gap-2 rounded-xl border-2 border-[var(--border)] bg-white/80 font-medium backdrop-blur-sm hover:border-amber-300 hover:bg-amber-500/10 dark:bg-zinc-800/80 dark:border-zinc-600 dark:hover:bg-zinc-700 sm:w-auto"
+            >
+              <a href="https://clipsync.up.railway.app" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+                <Globe className="h-5 w-5" aria-hidden />
+                Try Web
+              </a>
+            </Button>
+            <Button
+              asChild
               variant="ghost"
               size="lg"
-              className="h-12 w-full min-w-[160px] gap-2 rounded-xl border border-[var(--border)] bg-white/60 text-[var(--text-primary)] backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:border-amber-300 hover:bg-amber-500/10 dark:bg-zinc-800/80 dark:border-zinc-600 dark:hover:bg-zinc-700 sm:w-auto"
+              className="h-12 w-full min-w-[140px] gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] sm:w-auto"
             >
               <Link href="/#demo" className="flex items-center justify-center gap-2">
                 <Play className="h-5 w-5" aria-hidden />
@@ -166,7 +176,7 @@ export function Hero() {
             variants={item}
             className="text-sm text-[var(--text-secondary)]"
           >
-            Works on Windows, macOS, and Linux • No credit card required
+            Alpha release • Linux available now • Windows &amp; macOS coming soon
           </motion.p>
         </motion.div>
 
