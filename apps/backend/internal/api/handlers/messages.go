@@ -31,7 +31,9 @@ type PushMessagesRequest struct {
 	DeviceID string            `json:"deviceId" binding:"required"`
 }
 
-// List returns paginated synced messages for the user.
+const maxMessagesPageSize = 100
+
+// List returns paginated synced messages for the user. Capped at last 100 messages.
 func (h *MessagesHandler) List(c *gin.Context) {
 	userID, _ := c.Get("userId")
 	userIDStr := userID.(string)
@@ -39,6 +41,14 @@ func (h *MessagesHandler) List(c *gin.Context) {
 	page := c.DefaultQuery("page", "1")
 	pageSize := c.DefaultQuery("pageSize", "50")
 	since := c.Query("since") // ISO timestamp for "new since" (desktop polling)
+
+	limit := parseInt(pageSize)
+	if limit <= 0 {
+		limit = 50
+	}
+	if limit > maxMessagesPageSize {
+		limit = maxMessagesPageSize
+	}
 
 	query := h.db.Where("user_id = ?", userIDStr)
 
@@ -54,21 +64,43 @@ func (h *MessagesHandler) List(c *gin.Context) {
 	var total int64
 	query.Model(&models.SyncedMessage{}).Count(&total)
 
-	offset := (parseInt(page) - 1) * parseInt(pageSize)
-	if err := query.Offset(offset).Limit(parseInt(pageSize)).Find(&messages).Error; err != nil {
+	offset := (parseInt(page) - 1) * limit
+	if err := query.Offset(offset).Limit(limit).Find(&messages).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch messages"})
 		return
 	}
 
-	totalPages := (int(total) + parseInt(pageSize) - 1) / parseInt(pageSize)
+	totalPages := (int(total) + limit - 1) / limit
 
 	c.JSON(http.StatusOK, gin.H{
 		"data":       messages,
 		"total":      total,
 		"page":       parseInt(page),
-		"pageSize":   parseInt(pageSize),
+		"pageSize":   limit,
 		"totalPages": totalPages,
 	})
+}
+
+// Delete removes a synced message for the user.
+func (h *MessagesHandler) Delete(c *gin.Context) {
+	userID, _ := c.Get("userId")
+	userIDStr := userID.(string)
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "message id required"})
+		return
+	}
+
+	var msg models.SyncedMessage
+	if err := h.db.Where("id = ? AND user_id = ?", id, userIDStr).First(&msg).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Message not found"})
+		return
+	}
+	if err := h.db.Delete(&msg).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete message"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Deleted"})
 }
 
 // NewSince returns messages created after the given timestamp (for desktop push notification polling).

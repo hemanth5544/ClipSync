@@ -91,6 +91,7 @@ func InitializeRouter(db *gorm.DB) *gin.Engine {
 			messages.GET("", messagesHandler.List)
 			messages.GET("/new-since", messagesHandler.NewSince)
 			messages.POST("/push", messagesHandler.Push)
+			messages.DELETE("/:id", messagesHandler.Delete)
 		}
 	}
 
