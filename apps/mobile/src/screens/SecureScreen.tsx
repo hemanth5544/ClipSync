@@ -82,12 +82,17 @@ export default function SecureScreen() {
   const loadClips = async (key: Uint8Array): Promise<boolean> => {
     const encrypted = await api.secure.getClips();
     const decrypted: DecryptedClip[] = [];
-    for (const c of encrypted) {
+    for (let i = 0; i < encrypted.length; i++) {
+      const c = encrypted[i];
       try {
         const payload = await decryptPayload(key, c.encryptedPayload, c.nonce);
         decrypted.push({ id: c.id, ...payload, createdAt: c.createdAt });
       } catch {
         // Skip corrupted entries
+      }
+      // Yield to UI every clip so screen doesn't freeze
+      if (i < encrypted.length - 1) {
+        await new Promise((r) => setTimeout(r, 0));
       }
     }
     if (encrypted.length > 0 && decrypted.length === 0) {
@@ -134,9 +139,9 @@ export default function SecureScreen() {
     if (!masterPassword || !salt) return;
     const password = masterPassword;
     setUnlocking(true);
-    // Yield to UI so "Unlocking…" and spinner paint before heavy crypto work
-    InteractionManager.runAfterInteractions(() => {
-      (async () => {
+    // Force UI to paint "Unlocking…" before blocking on crypto (requestAnimationFrame + short delay)
+    requestAnimationFrame(() => {
+      setTimeout(async () => {
         try {
           const key = await deriveKey(password, salt!);
           await loadClips(key);
@@ -153,7 +158,7 @@ export default function SecureScreen() {
         } finally {
           setUnlocking(false);
         }
-      })();
+      }, 80);
     });
   };
 

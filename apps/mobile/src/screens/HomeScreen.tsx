@@ -463,8 +463,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
     marginHorizontal: 20,
-    marginTop: 12,
-    marginBottom: 16,
+    marginTop: 6,
+    marginBottom: 10,
     paddingHorizontal: 16,
     borderRadius: 16,
     height: 52,
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingTop: 8,
     paddingBottom: 32,
   },
   section: {

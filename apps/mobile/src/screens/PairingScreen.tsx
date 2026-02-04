@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Modal,
   Dimensions,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -120,6 +121,7 @@ export default function PairingScreen() {
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={["top", "left", "right", "bottom"]}>
       <View style={styles.inner}>
+        <Image source={require("../../assets/icon.png")} style={styles.logo} resizeMode="contain" accessibilityLabel="ClipSync logo" />
         <Text style={[styles.title, isDark && styles.titleDark]}>ClipSync</Text>
         <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>Enter pairing code to connect</Text>
 
@@ -218,6 +220,12 @@ const styles = StyleSheet.create({
   inner: {
     paddingHorizontal: 24,
     paddingVertical: 20,
+  },
+  logo: {
+    width: 88,
+    height: 88,
+    alignSelf: "center",
+    marginBottom: 16,
   },
   title: {
     fontSize: 34,
