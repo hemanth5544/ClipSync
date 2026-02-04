@@ -4,8 +4,8 @@ import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { SyncedMessage } from "@clipsync/types";
 import { api } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle, Button } from "@clipsync/ui";
-import { Copy, Check, MessageCircle, Clock, User } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, Button, Dialog, DialogContent, DialogHeader, DialogTitle } from "@clipsync/ui";
+import { Copy, Check, MessageCircle, Clock, User, Trash2, Expand } from "lucide-react";
 import { useToast } from "@clipsync/ui";
 import Sidebar from "@/components/Sidebar";
 import { useClipboardContext } from "@/contexts/ClipboardContext";
@@ -22,6 +22,8 @@ export default function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [fullMessage, setFullMessage] = useState<SyncedMessage | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const { toast } = useToast();
   const { saveFromClipboard, isWeb } = useClipboardContext();
 
@@ -53,7 +55,7 @@ export default function MessagesPage() {
     if (!session) return;
     try {
       setLoading(true);
-      const response = await api.messages.list({ pageSize: 200 });
+      const response = await api.messages.list({ pageSize: 100 });
       setMessages(response.data);
     } catch (error) {
       toast({
@@ -78,6 +80,21 @@ export default function MessagesPage() {
       }
     } catch {
       toast({ title: "Error", description: "Failed to copy", variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async (msg: SyncedMessage) => {
+    if (!confirm("Delete this message? This cannot be undone.")) return;
+    try {
+      setDeletingId(msg.id);
+      await api.messages.delete(msg.id);
+      setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+      if (fullMessage?.id === msg.id) setFullMessage(null);
+      toast({ title: "Deleted", description: "Message removed" });
+    } catch {
+      toast({ title: "Error", description: "Failed to delete message", variant: "destructive" });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -134,15 +151,35 @@ export default function MessagesPage() {
                       <span>{formatRelativeTime(msg.receivedAt)}</span>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleCopy(msg.body, msg.id)}
-                    className={isCopied ? "text-green-500 shrink-0" : "shrink-0"}
-                    title="Copy to clipboard"
-                  >
-                    {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  </Button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setFullMessage(msg)}
+                      title="View full message"
+                    >
+                      <Expand className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleCopy(msg.body, msg.id)}
+                      className={isCopied ? "text-green-500" : ""}
+                      title="Copy to clipboard"
+                    >
+                      {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(msg)}
+                      disabled={deletingId === msg.id}
+                      className="text-destructive hover:text-destructive"
+                      title="Delete message"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
@@ -201,6 +238,45 @@ export default function MessagesPage() {
           {mainContent}
         </div>
       </div>
+
+      <Dialog open={!!fullMessage} onOpenChange={(open) => !open && setFullMessage(null)}>
+        <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              {fullMessage ? (fullMessage.sender || fullMessage.address || "Unknown") : ""}
+            </DialogTitle>
+          </DialogHeader>
+          {fullMessage && (
+            <>
+              <p className="text-sm text-muted-foreground">
+                {formatRelativeTime(fullMessage.receivedAt)}
+              </p>
+              <div className="flex-1 min-h-0 overflow-y-auto rounded border bg-muted/30 p-3">
+                <p className="text-sm whitespace-pre-wrap break-words">{fullMessage.body}</p>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fullMessage && handleCopy(fullMessage.body, fullMessage.id)}
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => fullMessage && handleDelete(fullMessage)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

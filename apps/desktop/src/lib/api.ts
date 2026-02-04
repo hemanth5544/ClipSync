@@ -193,6 +193,12 @@ export const api = {
       const response = await fetchWithAuth(`/messages/new-since?since=${encodeURIComponent(since)}`);
       return response.json();
     },
+
+    delete: async (id: string): Promise<void> => {
+      await fetchWithAuth(`/messages/${id}`, {
+        method: "DELETE",
+      });
+    },
   },
 
   pairing: {
