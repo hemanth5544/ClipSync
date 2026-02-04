@@ -1,10 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="none" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="none">
   <defs>
-    <linearGradient id="mobile-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#d97706"/>
       <stop offset="100%" stop-color="#f59e0b"/>
     </linearGradient>
   </defs>
-  <rect width="1024" height="1024" rx="205" fill="url(#mobile-grad)"/>
-  <text x="512" y="700" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="520" font-weight="700" text-anchor="middle">C</text>
+  <!-- Rounded square background -->
+  <rect width="1024" height="1024" rx="205" fill="url(#bg)"/>
+  <!-- Clipboard clip bar (centered, scaled) -->
+  <rect x="352" y="288" width="320" height="96" rx="48" fill="white" opacity="0.95"/>
+  <!-- Clipboard body -->
+  <rect x="272" y="384" width="480" height="352" rx="48" fill="white" opacity="0.95"/>
+  <!-- Sync arrows -->
+  <path d="M640 584 A100 100 0 0 0 384 584 L424 624 A60 60 0 0 1 600 624 Z" fill="#d97706" opacity="0.9"/>
+  <path d="M384 648 A100 100 0 0 0 640 648 L600 608 A60 60 0 0 1 424 608 Z" fill="#d97706" opacity="0.9"/>
 </svg>

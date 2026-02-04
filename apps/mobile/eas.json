@@ -11,9 +11,15 @@
     },
     "preview": {
       "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://clipsync-production.up.railway.app/api",
+        "EXPO_PUBLIC_BETTER_AUTH_URL": "https://clipsync-auth.up.railway.app"
+      }
+    },
+    "apk": {
+      "distribution": "internal",
+      "android": { "buildType": "apk" },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://clipsync-production.up.railway.app/api",
         "EXPO_PUBLIC_BETTER_AUTH_URL": "https://clipsync-auth.up.railway.app"
@@ -21,6 +27,7 @@
     },
     "production": {
       "autoIncrement": true,
+      "android": { "buildType": "app-bundle" },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://clipsync-production.up.railway.app/api",
         "EXPO_PUBLIC_BETTER_AUTH_URL": "https://clipsync-auth.up.railway.app"

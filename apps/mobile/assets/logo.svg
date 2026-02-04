@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+  <!-- Clipboard clip bar -->
+  <rect x="352" y="88" width="320" height="96" rx="48" fill="url(#g)"/>
+  <!-- Clipboard body -->
+  <rect x="272" y="184" width="480" height="672" rx="48" fill="url(#g)"/>
+  <!-- Refresh/sync icon: two curved arrows (white) -->
+  <path d="M640 400 A140 140 0 0 0 384 400 L424 440 A100 100 0 0 1 600 440 Z" fill="white" opacity="0.95"/>
+  <path d="M384 624 A140 140 0 0 0 640 624 L600 584 A100 100 0 0 1 424 584 Z" fill="white" opacity="0.95"/>
+</svg>

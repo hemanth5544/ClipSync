@@ -11,7 +11,8 @@
     "ios": "cross-env NODE_OPTIONS='--no-experimental-strip-types' expo start --ios",
     "web": "cross-env NODE_OPTIONS='--no-experimental-strip-types' expo start --web",
     "lint": "eslint .",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "generate-icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
     "@clipsync/types": "workspace:*",
@@ -52,6 +53,7 @@
     "@clipsync/eslint-config": "workspace:*",
     "@clipsync/tsconfig": "workspace:*",
     "@types/react": "~19.1.0",
+    "sharp": "^0.33.5",
     "typescript": "~5.9.2"
   },
   "private": true

@@ -29,6 +29,8 @@
     "mobile:android": "cd apps/mobile && pnpm android",
     "mobile:ios": "cd apps/mobile && pnpm ios",
     "mobile:web": "cd apps/mobile && pnpm web",
+    "mobile:build:apk": "cd apps/mobile && eas build --platform android --profile apk",
+    "mobile:build:app-bundle": "cd apps/mobile && eas build --platform android --profile preview",
     "web:dev": "cd apps/web && pnpm dev",
     "web:build": "cd apps/web && pnpm build",
     "web:start": "cd apps/web && pnpm start",
