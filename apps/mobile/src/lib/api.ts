@@ -281,6 +281,12 @@ export const api = {
       });
       return response.json();
     },
+
+    delete: async (id: string): Promise<void> => {
+      await fetchWithAuth(`/messages/${id}`, {
+        method: "DELETE",
+      });
+    },
   },
 
   user: {

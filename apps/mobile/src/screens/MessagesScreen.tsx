@@ -11,6 +11,7 @@ import {
   Platform,
   AppState,
   AppStateStatus,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
@@ -39,6 +40,8 @@ export default function MessagesScreen() {
   const [syncing, setSyncing] = useState(false);
   const [syncEnabled, setSyncEnabled] = useState(false);
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
+  const [fullMessage, setFullMessage] = useState<SyncedMessage | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const isDark = actualTheme === "dark";
 
   const deviceId = Device.deviceName || Device.modelName || "Mobile";
@@ -121,7 +124,7 @@ export default function MessagesScreen() {
 
     setSyncing(true);
     try {
-      const smsList = await readSmsFromDevice({ maxCount: 500 });
+      const smsList = await readSmsFromDevice({ maxCount: 100 });
       if (smsList.length === 0) {
         Alert.alert(
           "No messages read",
@@ -167,6 +170,33 @@ export default function MessagesScreen() {
     } finally {
       setSyncing(false);
     }
+  };
+
+  const handleDeleteMessage = async (msg: SyncedMessage) => {
+    Alert.alert(
+      "Delete message?",
+      "This message will be removed from all your devices. This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setDeletingId(msg.id);
+              await api.messages.delete(msg.id);
+              setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+              if (fullMessage?.id === msg.id) setFullMessage(null);
+              Alert.alert("Deleted", "Message removed");
+            } catch (e) {
+              Alert.alert("Error", e instanceof Error ? e.message : "Failed to delete");
+            } finally {
+              setDeletingId(null);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const toggleSyncEnabled = async () => {
@@ -316,20 +346,92 @@ export default function MessagesScreen() {
           messages.map((msg) => (
             <View key={msg.id} style={[styles.messageCard, isDark && styles.cardDark]}>
               <View style={styles.messageHeader}>
-                <Text style={[styles.sender, isDark && styles.textLight]} numberOfLines={1}>
-                  {msg.sender || msg.address || "Unknown"}
-                </Text>
-                <Text style={[styles.time, isDark && styles.textMuted]}>
-                  {formatRelativeTime(msg.receivedAt)}
-                </Text>
+                <View style={styles.messageHeaderLeft}>
+                  <Text style={[styles.sender, isDark && styles.textLight]} numberOfLines={1}>
+                    {msg.sender || msg.address || "Unknown"}
+                  </Text>
+                  <Text style={[styles.time, isDark && styles.textMuted]}>
+                    {formatRelativeTime(msg.receivedAt)}
+                  </Text>
+                </View>
+                <View style={styles.messageHeaderRight}>
+                  <TouchableOpacity
+                    onPress={() => setFullMessage(msg)}
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                    style={styles.msgActionBtn}
+                  >
+                    <Ionicons name="expand-outline" size={20} color={isDark ? "#999" : "#666"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleDeleteMessage(msg)}
+                    disabled={deletingId === msg.id}
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                    style={styles.msgActionBtn}
+                  >
+                    <Ionicons name="trash-outline" size={20} color="#ef4444" />
+                  </TouchableOpacity>
+                </View>
               </View>
-              <Text style={[styles.body, isDark && styles.textLight]} numberOfLines={4}>
-                {msg.body}
-              </Text>
+              <TouchableOpacity onPress={() => setFullMessage(msg)} activeOpacity={0.7}>
+                <Text style={[styles.body, isDark && styles.textLight]} numberOfLines={4}>
+                  {msg.body}
+                </Text>
+              </TouchableOpacity>
             </View>
           ))
         )}
       </ScrollView>
+
+      <Modal
+        visible={!!fullMessage}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setFullMessage(null)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setFullMessage(null)}
+        >
+          <View style={[styles.modalContent, isDark && styles.modalContentDark]}>
+            <TouchableOpacity
+              style={styles.modalClose}
+              onPress={() => setFullMessage(null)}
+              hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+            >
+              <Ionicons name="close" size={28} color={isDark ? "#fff" : "#000"} />
+            </TouchableOpacity>
+            {fullMessage && (
+              <>
+                <Text style={[styles.modalSender, isDark && styles.textLight]}>
+                  {fullMessage.sender || fullMessage.address || "Unknown"}
+                </Text>
+                <Text style={[styles.modalTime, isDark && styles.textMuted]}>
+                  {formatRelativeTime(fullMessage.receivedAt)}
+                </Text>
+                <ScrollView style={styles.modalBodyWrap} showsVerticalScrollIndicator>
+                  <Text style={[styles.modalBody, isDark && styles.textLight]} selectable>
+                    {fullMessage.body}
+                  </Text>
+                </ScrollView>
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    style={[styles.modalBtn, styles.modalBtnDanger]}
+                    onPress={() => {
+                      handleDeleteMessage(fullMessage);
+                      setFullMessage(null);
+                    }}
+                    disabled={deletingId === fullMessage.id}
+                  >
+                    <Ionicons name="trash-outline" size={18} color="#fff" />
+                    <Text style={styles.modalBtnText}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -414,8 +516,40 @@ const styles = StyleSheet.create({
     marginTop: 10,
     overflow: "hidden",
   },
-  messageHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
+  messageHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 },
+  messageHeaderLeft: { flex: 1, minWidth: 0 },
+  messageHeaderRight: { flexDirection: "row", alignItems: "center", gap: 4 },
+  msgActionBtn: { padding: 8 },
   sender: { fontSize: 15, fontWeight: "600", color: "#000", flex: 1 },
   time: { fontSize: 12, color: "#666" },
   body: { fontSize: 14, color: "#333", lineHeight: 20 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    maxHeight: "80%",
+  },
+  modalContentDark: { backgroundColor: "#171717" },
+  modalClose: { position: "absolute", top: 12, right: 12, zIndex: 1 },
+  modalSender: { fontSize: 18, fontWeight: "600", color: "#000", marginBottom: 4 },
+  modalTime: { fontSize: 13, color: "#666", marginBottom: 12 },
+  modalBodyWrap: { maxHeight: 280, marginBottom: 16 },
+  modalBody: { fontSize: 15, color: "#333", lineHeight: 22 },
+  modalActions: { flexDirection: "row", gap: 12 },
+  modalBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  modalBtnDanger: { backgroundColor: "#ef4444" },
+  modalBtnText: { color: "#fff", fontWeight: "600", fontSize: 15 },
 });
