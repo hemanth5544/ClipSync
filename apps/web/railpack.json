@@ -3,7 +3,7 @@
   "steps": {
     "install": {
       "commands": [
-        "cd ../.. && corepack enable && corepack prepare pnpm@8.15.0 --activate && corepack exec pnpm install"
+        "cd ../.. && npm install -g pnpm@8.15.0 && pnpm install"
       ]
     }
   }
