@@ -1,7 +1,7 @@
 {
   "name": "@clipsync/mobile",
   "version": "1.0.0",
-  "description": "ClipSync mobile app (Expo). Part of monorepo — install from repo root: pnpm install.",
+  "description": "ClipSync mobile app (Expo). Part of monorepo \u2014 install from repo root: pnpm install.",
   "main": "index.ts",
   "scripts": {
     "start": "cross-env NODE_OPTIONS='--no-experimental-strip-types' expo start",
@@ -12,7 +12,10 @@
     "web": "cross-env NODE_OPTIONS='--no-experimental-strip-types' expo start --web",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
-    "generate-icons": "node scripts/generate-icons.js"
+    "generate-icons": "node scripts/generate-icons.js",
+    "build:android:production": "eas build --platform android --profile production",
+    "build:android:preview": "eas build --platform android --profile preview",
+    "submit:android:production": "eas submit --platform android --profile production --latest"
   },
   "dependencies": {
     "@clipsync/types": "workspace:*",
