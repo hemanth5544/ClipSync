@@ -1,0 +1,20 @@
+# Railway config for the WEB app (marketing/landing site).
+# Use this when you want to deploy the web app, not the desktop app.
+#
+# Option A — Deploy from repo root (recommended):
+#   - In Railway: Settings → Source → Root Directory: leave EMPTY
+#   - Settings → Build → Build Command: pnpm install && pnpm run web:build
+#   - Settings → Deploy → Start Command: pnpm run web:start
+#
+# Option B — Deploy from apps/web:
+#   - In Railway: Settings → Source → Root Directory: apps/web
+#   - This file is used; build/start run from monorepo root so workspace deps work.
+
+[build]
+builder = "RAILPACK"
+buildCommand = "cd ../.. && pnpm install && pnpm run web:build"
+
+[deploy]
+startCommand = "cd ../.. && pnpm run web:start"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
