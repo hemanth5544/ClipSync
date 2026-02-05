@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@clipsync/ui";
 import { Providers } from "./providers";
-import ClipboardPermissionBanner from "@/components/ClipboardPermissionBanner";
+import ClipboardBannerWhenAuthenticated from "@/components/ClipboardBannerWhenAuthenticated";
 
 export const metadata: Metadata = {
   title: "ClipSync - Clipboard Manager",
@@ -18,7 +18,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>
-          <ClipboardPermissionBanner />
+          <ClipboardBannerWhenAuthenticated />
           {children}
           <Toaster />
         </Providers>
