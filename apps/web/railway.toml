@@ -8,7 +8,8 @@
 #
 # Option B — Deploy from apps/web:
 #   - In Railway: Settings → Source → Root Directory: apps/web
-#   - This file is used; build/start run from monorepo root so workspace deps work.
+#   - railpack.json overrides install to use pnpm from monorepo root (fixes workspace:*).
+#   - Build/start run from monorepo root so workspace deps work.
 
 [build]
 builder = "RAILPACK"
