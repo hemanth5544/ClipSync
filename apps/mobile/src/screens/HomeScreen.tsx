@@ -363,6 +363,19 @@ export default function HomeScreen() {
         </View>
       )}
 
+      <TouchableOpacity
+        style={[styles.webBanner, isDark && styles.webBannerDark]}
+        onPress={() => openURL("https://clipsync.up.railway.app/")}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="globe-outline" size={22} color={isDark ? "#93c5fd" : "#2563eb"} />
+        <View style={styles.webBannerTextWrap}>
+          <Text style={[styles.webBannerTitle, isDark && styles.webBannerTitleDark]}>Acces ClipSync on the web</Text>
+          <Text style={[styles.webBannerSubtitle, isDark && styles.webBannerSubtitleDark]}>clipsync.up.railway.app</Text>
+        </View>
+        <Ionicons name="open-outline" size={20} color={isDark ? "#93c5fd" : "#2563eb"} />
+      </TouchableOpacity>
+
       {filteredClips.length === 0 ? (
         <View style={styles.centerContainer}>
           <View style={[styles.emptyIconWrap, isDark && styles.emptyIconWrapDark]}>
@@ -512,6 +525,44 @@ const styles = StyleSheet.create({
   selectToolbarDark: {
     backgroundColor: "#171717",
     borderBottomColor: "#262626",
+  },
+  webBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 20,
+    marginBottom: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    backgroundColor: "#eff6ff",
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    gap: 12,
+  },
+  webBannerDark: {
+    backgroundColor: "rgba(30, 58, 138, 0.35)",
+    borderColor: "rgba(59, 130, 246, 0.3)",
+  },
+  webBannerTextWrap: {
+    flex: 1,
+    minWidth: 0,
+  },
+  webBannerTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#1e40af",
+  },
+  webBannerTitleDark: {
+    color: "#93c5fd",
+  },
+  webBannerSubtitle: {
+    fontSize: 13,
+    color: "#3b82f6",
+    marginTop: 2,
+  },
+  webBannerSubtitleDark: {
+    color: "#93c5fd",
+    opacity: 0.9,
   },
   toolbarButton: {
     flexDirection: "row",
