@@ -199,6 +199,12 @@ export const api = {
         method: "DELETE",
       });
     },
+
+    clearAll: async (): Promise<void> => {
+      await fetchWithAuth("/messages/clear", {
+        method: "POST",
+      });
+    },
   },
 
   pairing: {

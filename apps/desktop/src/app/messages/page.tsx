@@ -14,6 +14,8 @@ import SearchOverlay from "@/components/SearchOverlay";
 import { formatRelativeTime } from "@/lib/timeUtils";
 import { useSession } from "@/lib/better-auth";
 
+const MESSAGES_DISPLAY_LIMIT = 100;
+
 export default function MessagesPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
@@ -24,6 +26,8 @@ export default function MessagesPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [fullMessage, setFullMessage] = useState<SyncedMessage | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [clearAllDialogOpen, setClearAllDialogOpen] = useState(false);
+  const [clearingAll, setClearingAll] = useState(false);
   const { toast } = useToast();
   const { saveFromClipboard, isWeb } = useClipboardContext();
 
@@ -55,7 +59,7 @@ export default function MessagesPage() {
     if (!session) return;
     try {
       setLoading(true);
-      const response = await api.messages.list({ pageSize: 100 });
+      const response = await api.messages.list({ pageSize: MESSAGES_DISPLAY_LIMIT });
       setMessages(response.data);
     } catch (error) {
       toast({
@@ -65,6 +69,21 @@ export default function MessagesPage() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleClearAllConfirm = async () => {
+    try {
+      setClearingAll(true);
+      await api.messages.clearAll();
+      setMessages([]);
+      setFullMessage(null);
+      setClearAllDialogOpen(false);
+      toast({ title: "Cleared", description: "All messages have been deleted." });
+    } catch {
+      toast({ title: "Error", description: "Failed to clear messages", variant: "destructive" });
+    } finally {
+      setClearingAll(false);
     }
   };
 
@@ -235,6 +254,22 @@ export default function MessagesPage() {
             onAddSnippet={() => setSearchOverlayOpen(false)}
             onSelectClip={async () => {}}
           />
+          {!loading && messages.length > 0 && (
+            <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30 shrink-0">
+              <p className="text-sm text-muted-foreground">
+                Last {MESSAGES_DISPLAY_LIMIT} messages · {messages.length} shown
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setClearAllDialogOpen(true)}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Clear all messages
+              </Button>
+            </div>
+          )}
           {mainContent}
         </div>
       </div>
@@ -275,6 +310,25 @@ export default function MessagesPage() {
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={clearAllDialogOpen} onOpenChange={setClearAllDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Clear all messages?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            This will delete all synced messages from all your devices. This cannot be undone.
+          </p>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setClearAllDialogOpen(false)} disabled={clearingAll}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleClearAllConfirm} disabled={clearingAll}>
+              {clearingAll ? "Clearing…" : "Clear all"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>
