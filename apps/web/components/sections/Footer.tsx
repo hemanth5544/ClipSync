@@ -13,15 +13,7 @@ const columns = [
       { href: '/changelog', label: 'Changelog' },
     ],
   },
-  {
-    title: 'Company',
-    links: [
-      { href: '/about', label: 'About' },
-      { href: '/blog', label: 'Blog' },
-      { href: '/careers', label: 'Careers' },
-      { href: '/contact', label: 'Contact' },
-    ],
-  },
+
   {
     title: 'Resources',
     links: [
@@ -42,9 +34,9 @@ const columns = [
 ]
 
 const social = [
-  { href: 'https://twitter.com', icon: Twitter, label: 'Twitter' },
-  { href: 'https://github.com', icon: Github, label: 'GitHub' },
-  { href: 'https://linkedin.com', icon: Linkedin, label: 'LinkedIn' },
+  // { href: 'https://twitter.com', icon: Twitter, label: 'Twitter' },
+  { href: 'https://github.com/hemanth5544/clipsync', icon: Github, label: 'GitHub' },
+  { href: 'https://in.linkedin.com/in/hemanthrachapalli', icon: Linkedin, label: 'LinkedIn' },
 ]
 
 export function Footer() {
@@ -111,9 +103,7 @@ export function Footer() {
           <p className="text-sm text-[var(--text-secondary)]">
             © {new Date().getFullYear()} ClipSync. All rights reserved.
           </p>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Made with ❤️ for productivity
-          </p>
+       
         </div>
       </div>
     </footer>

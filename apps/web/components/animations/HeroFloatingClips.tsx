@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 const clips = [
   { text: 'const api = "https://api.clipsync.dev"', delay: 0, x: -12, size: 'wide' as const },
   { text: 'Meeting at 3pm tomorrow', delay: 0.15, x: 8, size: 'normal' as const },
-  { text: '📋 Copy once, paste anywhere', delay: 0.3, x: -8, size: 'normal' as const },
+  { text: ' Copy once, paste anywhere', delay: 0.3, x: -8, size: 'normal' as const },
   { text: 'git clone https://github.com/...', delay: 0.45, x: 12, size: 'wide' as const },
 ]
 

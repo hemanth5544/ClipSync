@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Download, Play, ChevronDown, Clipboard, ClipboardCheck, Globe } from 'lucide-react'
+import { Download, Globe, Smartphone } from 'lucide-react'
+
+const ANDROID_APK_URL =
+  'https://github.com/hemanth5544/ClipSync/releases/download/v1.0.0/application-8644fd8a-e118-44bc-9437-475a307025a5.apk'
 import { Button } from '@clipsync/ui'
 import { HeroFloatingClips } from '@/components/animations/HeroFloatingClips'
 
@@ -11,125 +13,47 @@ const container = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.12, delayChildren: 0.15 },
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
   },
 }
 
 const item = {
-  hidden: { opacity: 0, y: 28 },
+  hidden: { opacity: 0, y: 16 },
   show: { opacity: 1, y: 0 },
 }
 
+const sampleClip = 'Meeting at 3pm tomorrow'
+
 export function Hero() {
-  const [clipboardHovered, setClipboardHovered] = useState(false)
-  const [clipDone, setClipDone] = useState(false)
-
-  const onClipboardHoverStart = () => {
-    setClipboardHovered(true)
-    setClipDone(false)
-  }
-  const onClipboardHoverEnd = () => {
-    setClipboardHovered(false)
-    setClipDone(false)
-  }
-
-  // After clipboard wiggle, show "copied" checkmark
-  useEffect(() => {
-    if (!clipboardHovered) return
-    const t = setTimeout(() => setClipDone(true), 550)
-    return () => clearTimeout(t)
-  }, [clipboardHovered])
-
   return (
     <section
       id="hero"
-      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-20 pb-24"
+      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-24 pb-20"
       aria-label="Hero"
     >
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 hero-gradient-mesh" />
-      <div className="absolute inset-0 spotlight" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_-20%,rgba(217,119,6,0.1),transparent_50%)]" />
-      <div className="absolute inset-0 noise-overlay" />
+      {/* Subtle background - no heavy gradients */}
+      <div className="absolute inset-0 bg-[var(--background)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(217,119,6,0.06),transparent_50%)]" />
+      <div className="dark:absolute dark:inset-0 dark:bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(245,158,11,0.04),transparent_50%)]" />
 
-      <div className="container relative z-10 mx-auto flex max-w-5xl flex-col items-center text-center">
+      <div className="container relative z-10 mx-auto flex max-w-4xl flex-col items-center text-center">
         <motion.div
           variants={container}
           initial="hidden"
           animate="show"
           className="flex flex-col items-center gap-8"
         >
-          <motion.p
-            variants={item}
-            className="rounded-full border border-[var(--border)] bg-white/80 px-5 py-2.5 text-sm font-medium text-[var(--text-secondary)] shadow-sm backdrop-blur-md dark:bg-zinc-800/90 dark:border-zinc-700 dark:text-zinc-300"
-          >
-            Loved by 50,000+ users worldwide
-          </motion.p>
-
           <motion.h1
             variants={item}
-            className="overflow-visible font-display text-4xl font-bold tracking-tight text-[var(--text-primary)] sm:text-5xl md:text-6xl lg:text-7xl lg:leading-[1.1]"
+            className="font-display text-4xl font-bold tracking-tight text-[var(--text-primary)] sm:text-5xl md:text-6xl"
           >
-            Your{' '}
-            <motion.span
-              className="relative inline-block cursor-default rounded-lg px-1.5 py-0.5 transition-colors hover:text-[var(--primary-from)]"
-              onHoverStart={onClipboardHoverStart}
-              onHoverEnd={onClipboardHoverEnd}
-              animate={{
-                scale: clipboardHovered ? 1.02 : 1,
-                transition: { duration: 0.2 },
-              }}
-            >
-              {/* Single clip icon on hover – above the word Clipboard */}
-              <motion.span
-                className="absolute bottom-full left-1/2 z-10 mb-2 flex -translate-x-1/2 items-center justify-center rounded-xl border border-amber-200 bg-white p-2 shadow-lg shadow-amber-500/20 dark:bg-zinc-800 dark:border-zinc-600"
-                initial={false}
-                animate={{
-                  opacity: clipboardHovered ? 1 : 0,
-                  y: clipboardHovered ? 0 : 8,
-                  scale: clipboardHovered ? 1 : 0.8,
-                }}
-                transition={{ duration: 0.2 }}
-              >
-                <motion.span
-                  initial={false}
-                  animate={{
-                    scale: clipDone ? [1, 1.15, 1] : 1,
-                    transition: { duration: 0.25 },
-                  }}
-                >
-                  {clipDone ? (
-                    <motion.span
-                      className="flex items-center gap-1.5"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ClipboardCheck className="h-6 w-6 text-emerald-500 sm:h-7 sm:w-7" aria-hidden />
-                      <span className="text-xs font-semibold text-emerald-600 sm:text-sm">Copied!</span>
-                    </motion.span>
-                  ) : (
-                    <motion.span
-                      animate={
-                        clipboardHovered
-                          ? { rotate: [0, -8, 8, 0], transition: { duration: 0.5, repeat: 1 } }
-                          : {}
-                      }
-                    >
-                      <Clipboard className="h-6 w-6 text-[var(--primary-from)] sm:h-7 sm:w-7" aria-hidden />
-                    </motion.span>
-                  )}
-                </motion.span>
-              </motion.span>
-              Clipboard
-            </motion.span>
-            ,{' '}
-            <span className="gradient-text">Everywhere</span>
+            Your clipboard,{' '}
+            <span className="gradient-text">everywhere</span>
           </motion.h1>
 
           <motion.p
             variants={item}
-            className="max-w-xl text-base leading-relaxed text-[var(--text-secondary)] sm:text-lg"
+            className="max-w-lg text-lg leading-relaxed text-[var(--text-secondary)]"
           >
             Never lose what you copy. Sync your clipboard across devices — secure, fast, and simple.
           </motion.p>
@@ -141,71 +65,88 @@ export function Hero() {
             <Button
               asChild
               size="lg"
-              className="h-12 w-full min-w-[180px] bg-gradient-to-r from-[var(--primary-from)] to-[var(--primary-to)] px-8 text-base font-semibold text-white shadow-lg shadow-amber-500/25 transition-all duration-200 hover:opacity-95 hover:shadow-amber-500/35 sm:w-auto"
+              className="h-12 min-w-[180px] bg-gradient-to-r from-[var(--primary-from)] to-[var(--primary-to)] px-8 text-base font-semibold text-white shadow-md transition-all hover:opacity-95"
             >
               <Link href="/#download" className="flex items-center justify-center gap-2">
                 <Download className="h-5 w-5" aria-hidden />
-                Download for Free
+                Get Started for Free
               </Link>
             </Button>
             <Button
               asChild
               variant="outline"
               size="lg"
-              className="h-12 w-full min-w-[180px] gap-2 rounded-xl border-2 border-[var(--border)] bg-white/80 font-medium backdrop-blur-sm hover:border-amber-300 hover:bg-amber-500/10 dark:bg-zinc-800/80 dark:border-zinc-600 dark:hover:bg-zinc-700 sm:w-auto"
+              className="h-12 min-w-[140px] gap-2"
             >
-              <a href="https://clipsync.up.railway.app" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+              <a
+                href="https://clipsync.up.railway.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2"
+              >
                 <Globe className="h-5 w-5" aria-hidden />
                 Try Web
               </a>
             </Button>
             <Button
               asChild
-              variant="ghost"
+              variant="outline"
               size="lg"
-              className="h-12 w-full min-w-[140px] gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] sm:w-auto"
+              className="h-12 min-w-[140px] gap-2"
             >
-              <Link href="/#demo" className="flex items-center justify-center gap-2">
-                <Play className="h-5 w-5" aria-hidden />
-                Watch Demo
-              </Link>
+              <a
+                href={ANDROID_APK_URL}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2"
+                aria-label="Download ClipSync Android APK"
+              >
+                <Smartphone className="h-5 w-5" aria-hidden />
+                Download APK
+              </a>
             </Button>
           </motion.div>
 
-          <motion.p
-            variants={item}
-            className="text-sm text-[var(--text-secondary)]"
-          >
-            Alpha release • Linux available now • Windows &amp; macOS coming soon
+          <motion.p variants={item} className="text-sm text-[var(--text-secondary)]">
+            Open-source • No credit card required
           </motion.p>
         </motion.div>
 
-        {/* Floating clipboard snippets - premium bento-style */}
+        {/* Floating clips - kept but will feel lighter with simpler hero above */}
         <motion.div
-          initial={{ opacity: 0, y: 48 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
-          className="relative mt-20 w-full max-w-4xl"
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="relative mt-16 w-full max-w-4xl"
         >
           <HeroFloatingClips />
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
       <motion.a
         href="#features"
-        className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 rounded-full px-4 py-2 text-[var(--text-secondary)] transition-colors hover:bg-amber-500/10 hover:text-[var(--primary-from)]"
+        className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 text-[var(--text-secondary)] transition-colors hover:text-[var(--primary-from)]"
         aria-label="Scroll to features"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.4 }}
+        transition={{ delay: 0.8 }}
       >
         <span className="text-xs font-medium">Scroll</span>
         <motion.span
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+          animate={{ y: [0, 4, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          className="inline-block"
         >
-          <ChevronDown className="h-5 w-5" aria-hidden />
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
         </motion.span>
       </motion.a>
     </section>

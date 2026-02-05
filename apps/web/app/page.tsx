@@ -19,7 +19,7 @@ export default function HomePage() {
         <FeaturesBento />
         <ProductShowcase />
         <HowItWorks />
-        <Pricing />
+        {false && <Pricing />}
         <FAQ />
         <FinalCTA />
         <Footer />
