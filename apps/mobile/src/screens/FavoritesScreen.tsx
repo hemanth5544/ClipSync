@@ -136,7 +136,7 @@ export default function FavoritesScreen() {
 
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={["top", "left", "right"]}>
-      <View style={[styles.searchContainer, isDark && styles.searchContainerDark]}>
+      <View style={[styles.searchContainer, isDark && styles.searchContainerDark, { marginTop: -25 }]}>
         <Ionicons name="search" size={22} color={isDark ? "#999" : "#666"} style={styles.searchIcon} />
         <TextInput
           style={[styles.searchInput, isDark && styles.searchInputDark]}

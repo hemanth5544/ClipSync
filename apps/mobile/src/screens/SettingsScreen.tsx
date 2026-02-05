@@ -78,9 +78,9 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={["top", "left", "right"]}>
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      <Image source={require("../../assets/icon.png")} style={styles.appLogo} resizeMode="contain" accessibilityLabel="ClipSync" />
+      {/* <Image source={require("../../assets/icon.png")} style={styles.appLogo} resizeMode="contain" accessibilityLabel="ClipSync" /> */}
       {/* User Info */}
-      <View style={[styles.section, isDark && styles.sectionDark]}>
+      <View style={[styles.section, isDark && styles.sectionDark ,{marginTop: -25}]}>
         <View style={styles.userInfo}>
           {user?.image ? (
             <Image source={{ uri: user.image }} style={styles.avatarImage} />

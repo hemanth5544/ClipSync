@@ -28,6 +28,7 @@ import { formatRelativeTime } from "../lib/timeUtils";
 const MESSAGES_SYNC_ENABLED_KEY = "messages_sync_enabled";
 const MESSAGES_LAST_SYNC_AT_KEY = "messages_last_sync_at";
 const BACKGROUND_SYNC_INTERVAL_MS = 45000; // 45 seconds
+const MESSAGES_DISPLAY_LIMIT = 100;
 
 /** Running inside Expo Go — SMS read is not available; need a dev build. */
 const isExpoGo = Constants.appOwnership === "expo";
@@ -48,7 +49,7 @@ export default function MessagesScreen() {
 
   const loadMessages = useCallback(async () => {
     try {
-      const response = await api.messages.list({ pageSize: 100 });
+      const response = await api.messages.list({ pageSize: MESSAGES_DISPLAY_LIMIT });
       setMessages(response.data);
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : "Failed to load messages";
@@ -58,6 +59,34 @@ export default function MessagesScreen() {
       setRefreshing(false);
     }
   }, []);
+
+  const handleClearAll = async () => {
+    Alert.alert(
+      "Clear all messages?",
+      "This will delete all synced messages from all your devices. This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear All",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setLoading(true);
+              await api.messages.clearAll();
+              setMessages([]);
+              setFullMessage(null);
+              Alert.alert("Cleared", "All messages have been deleted.");
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : "Failed to clear messages";
+              Alert.alert("Error", msg);
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  }
 
   // Re-check SMS permission when screen is focused (e.g. after user grants in dialog or returns from Settings)
   useFocusEffect(
@@ -151,7 +180,6 @@ export default function MessagesScreen() {
     }
   };
 
-  /** Push a few sample messages so you can test sync + desktop notifications in Expo Go. */
   const handleSyncSampleMessages = async () => {
     setSyncing(true);
     try {
@@ -261,7 +289,8 @@ export default function MessagesScreen() {
         contentContainerStyle={styles.scrollContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <View style={[styles.card, isDark && styles.cardDark]}>
+        //FIXME: Remove SMS sync UI for now
+        {/* <View style={[styles.card, isDark && styles.cardDark]}>
           <Text style={[styles.sectionTitle, isDark && styles.textLight]}>Sync phone messages</Text>
           {isExpoGo ? (
             <>
@@ -330,11 +359,24 @@ export default function MessagesScreen() {
               SMS sync is not available on iOS. Use an Android device to sync messages.
             </Text>
           )}
-        </View>
+        </View> */}
 
-        <Text style={[styles.sectionTitle, isDark && styles.textLight, { marginTop: 24 }]}>
-          Synced messages ({messages.length})
-        </Text>
+        <View style={styles.messagesHeader}>
+          <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+            Synced messages ({messages.length})
+          </Text>
+          <TouchableOpacity
+            onPress={handleClearAll}
+            disabled={messages.length === 0}
+            style={[styles.clearAllBtn, messages.length === 0 && styles.clearAllBtnDisabled]}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Ionicons name="trash-outline" size={22} color={messages.length === 0 ? (isDark ? "#555" : "#999") : "#ef4444"} />
+            <Text style={[styles.clearAllLabel, isDark && styles.textMuted, messages.length === 0 && styles.clearAllLabelDisabled]}>
+              Clear all
+            </Text>
+          </TouchableOpacity>
+        </View>
         {messages.length === 0 ? (
           <View style={[styles.emptyCard, isDark && styles.cardDark]}>
             <Ionicons name="chatbubbles-outline" size={48} color={isDark ? "#666" : "#999"} />
@@ -450,7 +492,25 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   cardDark: { backgroundColor: "#111" },
-  sectionTitle: { fontSize: 18, fontWeight: "600", marginBottom: 10, color: "#000" },
+  messagesHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+    gap: 12,
+  },
+  sectionTitle: { fontSize: 18, fontWeight: "600", color: "#000", flex: 1 },
+  clearAllBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  clearAllBtnDisabled: { opacity: 0.6 },
+  clearAllLabel: { fontSize: 14, fontWeight: "600", color: "#ef4444" },
+  clearAllLabelDisabled: { color: "#999" },
   textLight: { color: "#fff" },
   textMuted: { color: "#666" },
   hint: { fontSize: 14, color: "#666", marginBottom: 12, lineHeight: 20 },
