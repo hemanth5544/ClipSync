@@ -4,9 +4,11 @@ import { motion } from 'framer-motion'
 import { Button } from '@clipsync/ui'
 import { Download, Monitor, Laptop, Terminal, Clock, Globe } from 'lucide-react'
 
-// Files in web app public/releases/ — put built desktop installers there
 const RELEASES_PATH = '/releases'
 const WEB_APP_URL = 'https://clipsync.up.railway.app'
+
+const LINUX_DOWNLOAD_URL =
+  'https://github.com/hemanth5544/ClipSync/releases/download/v1.0.0/clipsync-desktop_1.0.0_amd64.zip'
 
 const desktopFiles = {
   windows: 'ClipSync Setup 1.0.0.exe',
@@ -95,9 +97,11 @@ export function FinalCTA() {
                 </Button>
                 <Button asChild size="lg" className="w-full" variant="outline">
                   <a
-                    href={downloadUrl(desktopFiles.linuxDeb)}
+                    href={LINUX_DOWNLOAD_URL}
                     download
-                    aria-label={`Download ClipSync DEB (${desktopFiles.linuxDeb})`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Download ClipSync for Linux (amd64 zip)"
                   >
                     DEB (.deb)
                   </a>

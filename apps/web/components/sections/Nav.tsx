@@ -7,13 +7,15 @@ import { Menu, X } from 'lucide-react'
 import { Button } from '@clipsync/ui'
 import { ThemeToggle } from '@/components/ThemeToggle'
 
-const navLinks = [
+const PRICING_ENABLED = false
+const navLinksAll = [
   { href: '/#features', label: 'Features' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/#download', label: 'Download' },
   { href: '/changelog', label: 'Changelog' },
   { href: '/#docs', label: 'Docs' },
 ]
+const navLinks = navLinksAll.filter((l) => (l.href === '/pricing' ? PRICING_ENABLED : true))
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false)

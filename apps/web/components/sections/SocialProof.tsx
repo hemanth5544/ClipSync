@@ -23,9 +23,7 @@ export function SocialProof() {
           transition={{ duration: 0.4 }}
           className="flex flex-col items-center gap-10"
         >
-          <p className="text-center font-display text-xl font-semibold text-[var(--text-primary)] md:text-2xl">
-            Loved by 50,000+ users worldwide
-          </p>
+    
 
           <div className="glass relative w-full max-w-4xl overflow-hidden rounded-2xl border border-[var(--border)] p-2">
             <motion.div
