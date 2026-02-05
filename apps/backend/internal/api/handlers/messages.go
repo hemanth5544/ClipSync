@@ -159,3 +159,15 @@ func (h *MessagesHandler) Push(c *gin.Context) {
 		"message": "Messages synced successfully",
 	})
 }
+
+func (h *MessagesHandler) ClearAll(c *gin.Context) {
+	userID, _ := c.Get("userId")
+	userIDStr := userID.(string)
+
+	result := h.db.Where("user_id = ?", userIDStr).Delete(&models.SyncedMessage{})
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to clear messages"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "All messages cleared", "deleted": result.RowsAffected})
+}
